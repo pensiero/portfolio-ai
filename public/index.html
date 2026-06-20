@@ -60,6 +60,23 @@
     }
 
     loadRandomStyle();
+
+    // When a style page triggers the earthquake shuffle, pick a new random style.
+    window.addEventListener('message', async (e) => {
+      if (e.data?.type !== 'portfolio-shuffle') return;
+      const stage = document.getElementById('stage');
+      try {
+        const res = await fetch('options/manifest.json', { cache: 'no-cache' });
+        const manifest = await res.json();
+        const files = (manifest.options || []).map((o) => o.file).filter(Boolean);
+        if (!files.length) return;
+        const current = sessionStorage.getItem(LAST_KEY);
+        const pool = files.length > 1 ? files.filter((f) => f !== current) : files;
+        const chosen = pool[Math.floor(Math.random() * pool.length)] || files[0];
+        sessionStorage.setItem(LAST_KEY, chosen);
+        stage.src = 'options/' + chosen;
+      } catch {}
+    });
   </script>
 </body>
 </html>

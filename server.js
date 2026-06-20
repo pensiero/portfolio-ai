@@ -25,11 +25,25 @@ app.use(express.json({ limit: '16kb' }));
 
 // The private bio lives OUTSIDE this directory, so it can never be served as a
 // static asset regardless of routing. public/ is the entire web surface.
-app.use(express.static(PUBLIC_DIR));
+app.use(express.static(PUBLIC_DIR, {
+  etag: false,
+  lastModified: false,
+  setHeaders(res) {
+    res.setHeader('Cache-Control', 'no-store');
+  }
+}));
 
 const askLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — please slow down.' }
+});
+
+const suggestionsLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests — please slow down.' }
@@ -156,6 +170,41 @@ app.post('/api/ask', askLimiter, async (req, res) => {
   } finally {
     res.end();
     if (!controller.signal.aborted) logQuery(lastQuestion, answerChars);
+  }
+});
+
+const SUGGESTIONS_SYSTEM = `You generate short follow-up questions for a portfolio AI about Oscar Fanelli.
+Given the last question and answer, return EXACTLY a valid JSON array of 4 short question strings (no markdown, no explanation).
+Mix: 2 questions that naturally follow up on what was just discussed, and 2 picked from the provided static list that are still relevant.
+Each question must be under 10 words. Return only the JSON array, e.g.: ["q1","q2","q3","q4"]`;
+
+app.post('/api/suggestions', suggestionsLimiter, async (req, res) => {
+  const { question, answer, staticQuestions } = req.body || {};
+  if (!question || !answer) {
+    return res.json({ suggestions: (staticQuestions || []).slice(0, 4) });
+  }
+
+  const messages = [
+    { role: 'system', content: SUGGESTIONS_SYSTEM },
+    {
+      role: 'user',
+      content: `Last question: "${String(question).slice(0, 300)}"\nLast answer: "${String(answer).slice(0, 600)}"\nStatic options: ${JSON.stringify((staticQuestions || []).slice(0, 8))}`
+    }
+  ];
+
+  try {
+    let result = '';
+    for await (const delta of streamChat({ messages })) {
+      result += delta;
+      if (result.length > 1000) break;
+    }
+    const match = result.match(/\[[\s\S]*?\]/);
+    if (!match) throw new Error('no array');
+    const suggestions = JSON.parse(match[0]);
+    if (!Array.isArray(suggestions)) throw new Error('not array');
+    res.json({ suggestions: suggestions.slice(0, 5).map(String) });
+  } catch {
+    res.json({ suggestions: (staticQuestions || []).slice(0, 4) });
   }
 });
 
