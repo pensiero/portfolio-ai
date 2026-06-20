@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio AI — Options Gallery</title>
+  <style>
+    body { margin:0; font-family:Inter,system-ui,sans-serif; background:#0b0b10; color:#f3f4f6; padding:32px; }
+    h1 { margin:0 0 18px; }
+    ul { padding-left:18px; line-height:1.85; }
+    a { color:#8ab4ff; }
+    .muted { opacity:0.6; }
+  </style>
+</head>
+<body>
+  <h1>Pick a direction</h1>
+  <ul id="list">
+    <li><a href="index.html">Random style launcher</a></li>
+  </ul>
+
+  <script>
+    // Manifest-driven — the gallery stays in sync with options/manifest.json.
+    (async () => {
+      const list = document.getElementById('list');
+      try {
+        const manifest = await (await fetch('options/manifest.json', { cache: 'no-cache' })).json();
+        for (const o of manifest.options || []) {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = 'options/' + o.file;
+          a.textContent = o.title || o.file;
+          li.append(a);
+          list.append(li);
+        }
+      } catch (err) {
+        const li = document.createElement('li');
+        li.className = 'muted';
+        li.textContent = 'Failed to load manifest.';
+        list.append(li);
+      }
+    })();
+  </script>
+</body>
+</html>

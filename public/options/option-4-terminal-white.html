@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Option 4 — Terminal Dossier (White)</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #dbe2ea;
+      --accent: #2563eb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% 14%, rgba(37, 99, 235, 0.08) 0%, transparent 32%),
+        radial-gradient(circle at 88% 82%, rgba(14, 165, 233, 0.08) 0%, transparent 30%),
+        var(--bg);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .window {
+      width: min(940px, 100%);
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 14px;
+      box-shadow: 0 26px 60px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fcfdff;
+    }
+
+    .lights {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+
+    .title {
+      color: var(--muted);
+      font-size: 0.74rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .body { padding: 24px; }
+
+    .line {
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    h1 {
+      margin: 8px 0 16px;
+      font-size: clamp(1.35rem, 3.4vw, 2.2rem);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      max-width: 34ch;
+    }
+
+    .prompt {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: #fff;
+    }
+
+    .tag {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.96rem;
+      padding: 6px 0;
+    }
+
+    input::placeholder { color: #94a3b8; }
+
+    button {
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s ease;
+    }
+
+    button.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    button.show:hover {
+      background: #dbeafe;
+    }
+
+    .blink::after {
+      content: '_';
+      margin-left: 3px;
+      color: #2563eb;
+      animation: blink 1s steps(1) infinite;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+  
+.style-shuffle{position:fixed;top:14px;right:14px;z-index:9999;font-size:.72rem;line-height:1;text-decoration:none;padding:6px 9px;border:1px solid currentColor;border-radius:999px;color:inherit;background:rgba(255,255,255,.08);opacity:.75;backdrop-filter:blur(2px)}
+.style-shuffle:hover{opacity:1}
+</style>
+</head>
+<body>
+  <section class="window">
+    <div class="top">
+      <div class="lights"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="title">I’m Oscar Fanelli</div>
+    </div>
+    <div class="body">
+      <div class="line">profile://interactive-query</div>
+      <h1 class="blink">What do you want to know about me?</h1>
+      <form data-llm-form class="prompt" id="f4">
+        <span class="tag">query$</span>
+        <input id="q4" placeholder="type your question..." />
+        <button id="b4" type="submit">run</button>
+      </form>
+    </div>
+  </section>
+
+  <a class="style-shuffle" href="../index.html" target="_top" aria-label="Shuffle style">shuffle style</a>
+
+<script src="llm-hook.js"></script>
+</body>
+</html>

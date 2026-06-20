@@ -1,0 +1,56 @@
+{
+  "contact": {
+    "email": "oscar.fanelli@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/oscarfanelli",
+    "github": "https://github.com/pensiero"
+  },
+  "about": {
+    "label": "What's behind this?",
+    "repoUrl": "https://github.com/pensiero/portfolio-ai",
+    "repoLabel": "See how it's built",
+    "paragraphs": [
+      "This isn't a CV or a LinkedIn export. You're talking to a conversational layer over a living professional profile — a structured knowledge base about how I work, think, and make decisions that I built and continuously refine together with AI. It evolves as I do.",
+      "And I don't just publish it — I use it. It's become a tool I consult to pressure-test decisions, recall my own past reasoning, and weigh a choice against a model of how I actually think. The system answering your questions is one I rely on myself."
+    ]
+  },
+  "suggestedQuestions": [
+    "What can you build?",
+    "What's your management style?",
+    "Tell me about a hard technical decision you made",
+    "How do you approach scaling a team?",
+    "Are you open to new opportunities?"
+  ],
+  "options": [
+    { "file": "option-1-original.html", "title": "Original Prototype", "caption": "Profile: Oscar Fanelli · Interface: Original Query Prototype" },
+    { "file": "option-2-editorial.html", "title": "Cyberpunk Core", "caption": "Signal: Oscar Fanelli · Mode: Cyberpunk Query Core" },
+    { "file": "option-3-terminal.html", "title": "Terminal Dossier (dark)", "caption": "Identity: Oscar Fanelli · Channel: Terminal Dossier" },
+    { "file": "option-4-terminal-white.html", "title": "Terminal Dossier (white)", "caption": "Identity: Oscar Fanelli · Channel: White Terminal Cut" },
+    { "file": "option-5-museum-label.html", "title": "Museum Label", "caption": "Catalog Entry: Oscar Fanelli · Method: Curated Inquiry" },
+    { "file": "option-6-apple-spotlight.html", "title": "Apple-ish Spotlight", "caption": "Spotlight Subject: Oscar Fanelli · Prompt-Led Discovery" },
+    { "file": "option-7-detective-dossier.html", "title": "Detective Dossier", "caption": "Subject: Oscar Fanelli · Interface: Query Dossier" },
+    { "file": "option-8-brutalist-mono.html", "title": "Brutalist Mono", "caption": "Poster Subject: Oscar Fanelli · Command: Ask Direct" },
+    { "file": "option-14-luxury-concierge.html", "title": "Luxury Concierge", "caption": "Guest Profile: Oscar Fanelli · Service: Private Concierge Query" },
+    { "file": "option-15-cinematic-biography.html", "title": "Movie Poster Cut", "caption": "Featuring: Oscar Fanelli · Cut: Movie Poster Query" },
+    { "file": "option-18-swiss-poster.html", "title": "Minimal Swiss Poster", "caption": "Grid Subject: Oscar Fanelli · Layout: Swiss Query System" },
+    { "file": "option-19-art-deco.html", "title": "Art Deco", "caption": "Deco Subject: Oscar Fanelli · Prompt: Golden Inquiry" },
+    { "file": "option-20-bauhaus.html", "title": "Bauhaus", "caption": "Composition: Oscar Fanelli · Form: Bauhaus Prompt Field" },
+    { "file": "option-21-journal.html", "title": "Journal", "caption": "Journal Subject: Oscar Fanelli · Entry: Open Question" },
+    { "file": "option-25-retro-futurism.html", "title": "Retro Futurism", "caption": "Transmission: Oscar Fanelli · Era: Retro Future Inquiry" },
+    { "file": "option-27-pop-art.html", "title": "Pop Art", "caption": "Pop Subject: Oscar Fanelli · Action: Ask Now" },
+    { "file": "option-30-cubist-picasso.html", "title": "Cubist (Picasso)", "caption": "Portrait: Oscar Fanelli · Lens: Cubist Perspectives" },
+    { "file": "option-31-surreal-dali.html", "title": "Surreal (Dalí)", "caption": "Dream Subject: Oscar Fanelli · Frame: Surreal Query" },
+    { "file": "option-32-japanese-ukiyoe.html", "title": "Ukiyo-e", "caption": "Wave Subject: Oscar Fanelli · Flow: Ukiyo-e Inquiry" },
+    { "file": "option-33-greek-classical.html", "title": "Greek Classical", "caption": "Figure: Oscar Fanelli · Order: Classical Query" },
+    { "file": "option-34-egyptian.html", "title": "Egyptian Revival", "caption": "Figure: Oscar Fanelli · Chamber: Egyptian Inquiry Gate" },
+    { "file": "option-35-mexican-muralist.html", "title": "Mexican Muralist", "caption": "Mural Subject: Oscar Fanelli · Route: Color-Driven Query" },
+    { "file": "option-36-byzantine-gold.html", "title": "Byzantine Gold", "caption": "Icon Subject: Oscar Fanelli · Panel: Byzantine Query" },
+    { "file": "option-38-suprematist.html", "title": "Suprematist", "caption": "Object: Oscar Fanelli · Plane: Suprematist Prompt" },
+    { "file": "option-39-gothic-manuscript.html", "title": "Gothic Manuscript", "caption": "Manuscript Subject: Oscar Fanelli · Folio: Gothic Query" },
+    { "file": "option-41-afrofuturism.html", "title": "Afrofuturism", "caption": "Signal Carrier: Oscar Fanelli · Mode: Afrofuturist Query" },
+    { "file": "option-44-andean-textile.html", "title": "Andean Textile", "caption": "Weave Subject: Oscar Fanelli · Thread: Andean Inquiry" },
+    { "file": "option-45-maori-tattoo.html", "title": "Māori-Inspired Geometric", "caption": "Pattern Subject: Oscar Fanelli · Line: Geometric Inquiry" },
+    { "file": "option-46-aboriginal-dots.html", "title": "Dot Painting Inspired", "caption": "Ground Subject: Oscar Fanelli · Rhythm: Dot Inquiry" },
+    { "file": "option-47-brazilian-modernism.html", "title": "Brazilian Modernism", "caption": "Form Subject: Oscar Fanelli · School: Brazilian Modernism" },
+    { "file": "option-48-bauhaus-memphis-hybrid.html", "title": "Memphis Hybrid", "caption": "Frame Subject: Oscar Fanelli · Style: Memphis Hybrid Query" }
+  ]
+}
