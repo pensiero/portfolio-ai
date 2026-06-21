@@ -70,6 +70,12 @@
       }
       .llm-dot:nth-child(2){animation-delay:.22s}
       .llm-dot:nth-child(3){animation-delay:.44s}
+      .llm-answer-body ul,.answer-body ul{margin:6px 0 2px;padding-left:22px}
+      .llm-answer-body li,.answer-body li{margin:4px 0;line-height:1.55}
+      .confidence-tag{display:flex;align-items:center;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid color-mix(in srgb,currentColor 15%,transparent);font-size:11px;opacity:.45;letter-spacing:.04em}
+      .confidence-label{text-transform:uppercase;font-weight:600;letter-spacing:.12em;font-size:10px}
+      .confidence-sep{opacity:.5}
+      .confidence-pct{font-weight:700;font-variant-numeric:tabular-nums}
     `;
 
     // Full composite-renderer CSS, injected for every page that opts in.
@@ -436,24 +442,77 @@
     label.textContent = role === 'user' ? 'You' : 'Oscar AI';
 
     const body = el('div');
-    const { main, source } = splitCitation(content);
-    body.textContent = main;
-
     wrap.append(label, body);
-    if (source) {
-      const src = el('div', { fontSize: '0.75rem', opacity: '0.6', marginTop: '4px' });
-      src.textContent = 'Source: ' + source;
-      wrap.append(src);
+
+    if (role === 'assistant' && content) {
+      body.className = 'llm-answer-body';
+      const { body: mdBody, source, confidence } = parseAnswer(content);
+      body.innerHTML = renderMarkdown(mdBody);
+      if (source) {
+        const src = el('div', { fontSize: '0.75rem', opacity: '0.6', marginTop: '4px' });
+        src.textContent = 'Source: ' + source;
+        wrap.append(src);
+      }
+      if (confidence) wrap.append(makeConfEl(confidence));
+    } else {
+      body.textContent = content;
     }
+
     history.append(wrap);
     return body; // returned so streaming can append into it
   }
 
-  // Pull a trailing "Source: ..." line off the answer, if present.
-  function splitCitation(text) {
-    const m = text.match(/\n?\s*Source:\s*([^\n]+)\s*$/i);
-    if (!m) return { main: text.trim(), source: '' };
-    return { main: text.slice(0, m.index).trim(), source: m[1].trim() };
+  // Parse a completed answer into body text, optional Source, optional Confidence.
+  function parseAnswer(text) {
+    let body = (text || '').trim();
+    let confidence = '';
+    let source = '';
+    const confM = body.match(/\n?\s*Confidence:\s*(\d+)\s*%?\s*$/i);
+    if (confM) { confidence = confM[1] + '%'; body = body.slice(0, confM.index).trim(); }
+    const srcM = body.match(/\n?\s*Source:\s*([^\n]+)\s*$/i);
+    if (srcM) { source = srcM[1].trim(); body = body.slice(0, srcM.index).trim(); }
+    return { body, source, confidence };
+  }
+
+  // Strip trailing Source/Confidence lines for live streaming display (plain text).
+  function streamBody(text) {
+    return text.replace(/\nSource:[^\n]*$/i, '').replace(/\nConfidence:[^\n]*$/i, '').trim();
+  }
+
+  // Lightweight markdown → HTML. Escapes entities first (XSS-safe), then parses
+  // bold, italic, and bullet lists. Non-list lines keep their newlines via pre-wrap.
+  function renderMarkdown(raw) {
+    const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const inline = (s) =>
+      esc(s)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+    const lines = raw.split('\n');
+    const parts = [];
+    let listItems = [];
+    const flushList = () => {
+      if (listItems.length) {
+        parts.push('<ul class="md-list">' + listItems.join('') + '</ul>');
+        listItems = [];
+      }
+    };
+    for (const line of lines) {
+      const m = line.match(/^\s*[-*]\s+(.*)/);
+      if (m) { listItems.push('<li>' + inline(m[1]) + '</li>'); }
+      else { flushList(); parts.push(line.trim() === '' ? '' : inline(line)); }
+    }
+    flushList();
+    return parts.join('\n');
+  }
+
+  function makeConfEl(pct) {
+    const div = document.createElement('div');
+    div.className = 'confidence-tag';
+    div.innerHTML =
+      '<span class="confidence-label">Confidence</span>' +
+      '<span class="confidence-sep">·</span>' +
+      '<span class="confidence-pct">' + pct + '</span>';
+    return div;
   }
 
   function renderChips(chips, input, submit, questions) {
@@ -659,17 +718,22 @@
         await streamAnswer(conversation.slice(-MAX_HISTORY), (delta) => {
           if (answerEl.contains(thinkingEl)) answerEl.textContent = '';
           answer += delta;
-          const { main } = splitCitation(answer);
-          answerEl.textContent = main;
+          answerEl.textContent = streamBody(answer);
           answerEl.scrollIntoView({ block: 'nearest' });
         });
 
-        const { source } = splitCitation(answer);
+        // Final render: apply markdown and styled confidence/source elements.
+        const { body: mdBody, source, confidence } = parseAnswer(answer);
+        answerEl.className = 'llm-answer-body';
+        answerEl.innerHTML = renderMarkdown(mdBody);
+        let insertAfter = answerEl;
         if (source) {
           const src = el('div', { fontSize: '0.75rem', opacity: '0.6', marginTop: '4px' });
           src.textContent = 'Source: ' + source;
-          answerEl.insertAdjacentElement('afterend', src);
+          insertAfter.insertAdjacentElement('afterend', src);
+          insertAfter = src;
         }
+        if (confidence) insertAfter.insertAdjacentElement('afterend', makeConfEl(confidence));
 
         conversation.push({ role: 'assistant', content: answer || 'No answer returned.' });
         saveConversation();
@@ -846,13 +910,14 @@
       }
       wrap.append(head);
 
-      const { main, source } = splitCitation(content);
-      const body = el('div'); body.className = 'answer-body'; body.textContent = main;
+      const { body: mdBody, source, confidence } = parseAnswer(content);
+      const body = el('div'); body.className = 'answer-body'; body.innerHTML = renderMarkdown(mdBody);
       wrap.append(body);
       if (source) {
         const src = el('div'); src.className = 'answer-source'; src.textContent = 'Source: ' + source;
         wrap.append(src);
       }
+      if (confidence) wrap.append(makeConfEl(confidence));
       if (chipsLoading) {
         // "Thinking about follow-ups" beat while suggestions are fetched.
         const load = el('div'); load.className = 'answer-chips-loading';
@@ -1137,8 +1202,7 @@
         await streamAnswer(conversation.slice(-MAX_HISTORY), (delta) => {
           if (firstToken) { firstToken = false; swapToBody(); }
           answer += delta;
-          const { main } = splitCitation(answer);
-          if (bodyEl) bodyEl.textContent = main;
+          if (bodyEl) bodyEl.textContent = streamBody(answer);
           liveAnswer?.scrollIntoView({ block: 'nearest' });
         });
 

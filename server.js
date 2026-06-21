@@ -123,7 +123,7 @@ function parseMessages(body) {
       return { error: 'Invalid message role' };
     }
     if (!content) return { error: 'Empty message content' };
-    if (content.length > MAX_MESSAGE_CHARS) {
+    if (role === 'user' && content.length > MAX_MESSAGE_CHARS) {
       return { error: `Message too long (max ${MAX_MESSAGE_CHARS} characters)` };
     }
     clean.push({ role, content });
