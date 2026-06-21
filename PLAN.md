@@ -1,14 +1,14 @@
 # Portfolio AI — Roadmap
 
 A conversational portfolio: visitors ask an LLM questions answered from a private
-bio, behind a signature "shuffle" that loads one of 31 hand-designed art-style
+bio, behind a signature "shuffle" that loads one of 23 hand-designed art-style
 pages. This file tracks what's shipped and what's next.
 
 ## Architecture (current)
 
 ```
 server.js            Express: serves public/, streams /api/ask (SSE)
-lib/llm.js           Swappable LLM provider (Ollama today; cloud later)
+lib/llm.js           Swappable LLM provider (Ollama local; OpenCode Go hosted)
 content/             private-context.md — the bio, never web-served
 logs/                queries.jsonl — anonymized question log (gitignored)
 public/              the entire web surface
@@ -18,7 +18,7 @@ public/              the entire web surface
   styles.css         option-1 only
   options/
     manifest.json    SINGLE SOURCE OF TRUTH (options, captions, chips, contact)
-    option-*.html    31 art-style pages
+    option-*.html    23 art-style pages
 ```
 
 Adding a style = drop a file in `public/options/` + add one `manifest.json` entry.
@@ -60,11 +60,23 @@ Adding a style = drop a file in `public/options/` + add one `manifest.json` entr
 - Added `README.md` (with the privacy model), `LICENSE` (MIT), `.env.example`.
 - Local model default is now `gemma4:12b-mlx` (was `llama3.1:8b-instruct-q4_K_M`).
 
+**Content & model**
+
+- Real bio is in place: `content/private-context.md` is now a full, citable biography (~5k words). Decision: it lives as
+  a local git-ignored file read live at request time (edits go live without a restart) — not a submodule/build-time fetch.
+  The tracked `private-context.example.md` template was refreshed to mirror the structure that grounds good answers.
+- Cloud model shipped: OpenCode Go (Zen) wired as the `opencode` provider in `lib/llm.js` (OpenAI-compatible, one Bearer
+  key). Default model `deepseek-v4-flash`; swap any Zen model via `OPENCODE_MODEL`. Flip `LLM_PROVIDER=opencode` to use it.
+- Prompt caching is effectively active for free. `server.js` builds the request as `[system prompt][bio][conversation]`,
+  so the static ~7k-token bio is a stable, byte-identical *leading prefix* on every call — exactly what prefix-caching
+  keys on. DeepSeek caches this server-side automatically (cache hits ~10× cheaper input), with no code change. Nothing
+  to implement; just keep the bio as the leading, unchanged block (don't inject timestamps/variable text before it).
+
 **Refactor**
 
 - `options/manifest.json` is now the single source of truth — replaced the triple-maintained list/caption data plus the
   hardcoded gallery (4 sources → 1).
-- Stripped redundant inline form-binding scripts from all 31 options; folded `app.js` into `llm-hook.js` and deleted it;
+- Stripped redundant inline form-binding scripts from all 23 options; folded `app.js` into `llm-hook.js` and deleted it;
   standardized every form on a `data-llm-form` contract.
 - Restructured into a `public/` web root; provider abstraction in `lib/llm.js`.
 - Chat persists across the shuffle via sessionStorage (restyle without losing the thread).
@@ -76,16 +88,12 @@ Adding a style = drop a file in `public/options/` + add one `manifest.json` entr
 
 ## Later
 
-- **Real bio content.** `content/private-context.md` is still placeholder — the product is only as good as the bio. Pull
-  the real biography from its source repo (decide: git submodule vs build-time fetch).
-- **Retrieval / RAG.** When the bio grows past one file, retrieve relevant sections instead of stuffing the whole
-  document into every prompt.
-- **Cloud model swap.** Move off local Ollama to a hosted model — evaluating DeepSeek V4 Flash / Pro via OpenCode or
-  another provider. Already abstracted in `lib/llm.js`: add a provider + flip `LLM_PROVIDER`. Revisit best-effort
-  citation quality once on the stronger model.
-- **Prompt caching.** Once on a caching-capable API, cache the static bio so it isn't re-billed per call (N/A to
-  Ollama).
-
-## Notes / TODO before going public
-
-- Replace placeholder bio content in `content/private-context.md`.
+- **Model evaluation.** Now on `deepseek-v4-flash`. Compare against `deepseek-v4-pro` and other Zen models
+  (Kimi, Qwen, GLM) on answer quality and citation reliability — swap is just `OPENCODE_MODEL`.
+- **Retrieval / RAG.** Deliberately deferred. At ~7k tokens the whole bio fits easily and the prompt depends on
+  *synthesizing across sections* — chunk-retrieval would fragment that and hurt answers. Revisit only if the bio splits
+  into multiple files or grows past ~25–30k tokens.
+- **Explicit / measurable caching.** Automatic prefix caching already covers the bio on DeepSeek (see Done). The open
+  item is *visibility and control*: OpenCode Go bills against dollar caps and won't surface per-request cached-token
+  counts. If cost ever needs measuring or tuning, OpenRouter exposes cache accounting (cached tokens / discount) per
+  request and supports explicit `cache_control` for models that need it — switch the provider's base URL/key to evaluate.

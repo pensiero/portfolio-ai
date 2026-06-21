@@ -133,6 +133,7 @@
     // When a style page triggers a shuffle (button or earthquake), roll a new
     // style, record it, and crossfade it in without a hard reload.
     window.addEventListener('message', async (e) => {
+      if (e.origin !== location.origin) return; // ignore cross-origin messages
       if (e.data?.type !== 'portfolio-shuffle') return;
       try {
         const files = await getFiles();

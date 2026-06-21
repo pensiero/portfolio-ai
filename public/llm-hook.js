@@ -14,7 +14,6 @@
 
 (() => {
   const ENDPOINT = '/api/ask';
-  const SUGGESTIONS_ENDPOINT = '/api/suggestions';
   const CHAT_KEY = 'portfolio-chat-v1';
   const MAX_CHARS = 500;
   const MAX_HISTORY = 12;
@@ -22,7 +21,47 @@
   const SHUFFLE_VEIL_KEY = 'portfolio-shuffle-veil';
 
   // Cycling status lines shown in the loading skeleton (composite design).
-  const STATUSES = ['Reading my bio…', 'Connecting the dots…', 'Composing an answer…'];
+  // Index 0 always shows first; the rest are shuffled randomly each time.
+  const STATUSES_FIRST = 'Reading my bio…';
+  const STATUSES_REST = [
+    'Consulting the fundamental interconnectedness of all things…',
+    'Following the universe\'s subtle clues…',
+    'A cat appeared. Ignoring it for now…',
+    'Checking if this is relevant. It probably is…',
+    'The answer exists. Locating it holistically…',
+    'Rummaging through the space-time sofa cushions…',
+    'Cross-referencing with the Electric Monk…',
+    'Something is connected to something else. Working on it…',
+    'The horse is fine. Focusing on your question…',
+    'Applying Zen navigation principles…',
+    'Detecting improbable correlations…',
+    'Things are weirder than they look. Proceeding anyway…',
+    'A ghost just walked through the server room. Good sign…',
+    'The biscuit tin is empty. Caffeinating metaphysically…',
+    'Following a random stranger who seems to know the way…',
+    'Persuading the universe to cooperate…',
+    'Odd. That should not have worked. But it did…',
+    'Checking for coincidences that are definitely not coincidences…',
+    'Stuck in the bath. Thinking through it…',
+    'The sofa is stuck on the stairs. Routing around it…',
+    'Quantum entanglement achieved. Mostly…',
+    'Triangulating via a series of unlikely taxi rides…',
+    'The answer came to me in a dream. Verifying now…',
+    'Holistic logic circuits warming up…',
+    'It\'s not a coincidence. Nothing ever is…',
+    'The universe is providing. Please hold…',
+    'Retracing steps that were never actually taken…',
+    'Consulting a refrigerator that may be haunted…',
+    'Thor (the cat) is sitting on the relevant files…',
+    'Found a lead. Following it somewhere completely unrelated…',
+    'A door that should be locked is open. Interesting…',
+    'The Electric Monk believes this on your behalf…',
+    'Detecting meaningful patterns in background noise…',
+  ];
+  function makeSTATUSES() {
+    const rest = STATUSES_REST.slice().sort(() => Math.random() - 0.5);
+    return [STATUSES_FIRST, ...rest];
+  }
 
   let manifest = null;
   let conversation = loadConversation(); // [{ role, content }]
@@ -333,7 +372,7 @@
   function shuffleStyle() {
     if (window.parent && window.parent !== window) {
       try {
-        window.parent.postMessage({ type: 'portfolio-shuffle' }, '*');
+        window.parent.postMessage({ type: 'portfolio-shuffle' }, location.origin);
         return;
       } catch {
         /* fall through to standalone navigation */
@@ -370,25 +409,8 @@
     shuffleStyle();
   }
 
-  // ---- dynamic follow-up suggestions ----
-  async function fetchSuggestions(lastQuestion, lastAnswer) {
-    try {
-      const res = await fetch(SUGGESTIONS_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: lastQuestion,
-          answer: lastAnswer,
-          staticQuestions: manifest?.suggestedQuestions || []
-        })
-      });
-      if (!res.ok) return null;
-      const data = await res.json();
-      return Array.isArray(data.suggestions) && data.suggestions.length ? data.suggestions : null;
-    } catch {
-      return null;
-    }
-  }
+  // Follow-up suggestions now ride along inside each answer (a trailing
+  // "[FOLLOWUPS]" block parsed out by parseAnswer) — no second model call.
 
   // ---- chat UI ----
   function buildChat(form) {
@@ -462,31 +484,58 @@
     return body; // returned so streaming can append into it
   }
 
-  // Parse a completed answer into body text, optional Source, optional Confidence.
+  // Parse a completed answer into body text, optional Source, optional
+  // Confidence, and the trailing [FOLLOWUPS] questions (up to 3).
   function parseAnswer(text) {
     let body = (text || '').trim();
     let confidence = '';
     let source = '';
+    let followups = [];
+
+    // Follow-ups come last, after a "[FOLLOWUPS]" sentinel line.
+    const fi = body.search(/\[FOLLOWUPS\]/i);
+    if (fi !== -1) {
+      const block = body.slice(fi).replace(/\[FOLLOWUPS\]/i, '');
+      body = body.slice(0, fi).trim();
+      followups = block
+        .split('\n')
+        .map((l) => l.replace(/^\s*[-*\d.)\]]+\s*/, '').trim()) // strip "- ", "1. ", "1)" markers
+        .filter(Boolean)
+        .slice(0, 3);
+    }
+
     const confM = body.match(/\n?\s*Confidence:\s*(\d+)\s*%?\s*$/i);
     if (confM) { confidence = confM[1] + '%'; body = body.slice(0, confM.index).trim(); }
     const srcM = body.match(/\n?\s*Source:\s*([^\n]+)\s*$/i);
     if (srcM) { source = srcM[1].trim(); body = body.slice(0, srcM.index).trim(); }
-    return { body, source, confidence };
+    return { body, source, confidence, followups };
   }
 
-  // Strip trailing Source/Confidence lines for live streaming display (plain text).
+  // Strip trailing [FOLLOWUPS] block (incl. a partial sentinel still streaming)
+  // and the Source/Confidence lines, so the live display shows only prose.
   function streamBody(text) {
-    return text.replace(/\nSource:[^\n]*$/i, '').replace(/\nConfidence:[^\n]*$/i, '').trim();
+    let t = text;
+    const fi = t.search(/\[FOLLOWUPS\]/i);
+    if (fi !== -1) t = t.slice(0, fi);
+    else t = t.replace(/\n*\[[A-Z\]]*$/i, ''); // partial sentinel forming, e.g. "[FOLLOW"
+    return t.replace(/\nSource:[^\n]*$/i, '').replace(/\nConfidence:[^\n]*$/i, '').trim();
   }
 
   // Lightweight markdown → HTML. Escapes entities first (XSS-safe), then parses
-  // bold, italic, and bullet lists. Non-list lines keep their newlines via pre-wrap.
+  // bold, italic, bare URLs, and bullet lists. Non-list lines keep their
+  // newlines via pre-wrap.
   function renderMarkdown(raw) {
     const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const inline = (s) =>
       esc(s)
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+        .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>')
+        // Autolink bare http(s) URLs. Runs after escaping (so it can't inject
+        // markup) and stops at "<" and trailing punctuation. http/https only.
+        .replace(
+          /\b(https?:\/\/[^\s<]+[^\s<.,;:!?)\]])/g,
+          '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:inherit;text-underline-offset:2px">$1</a>'
+        );
     const lines = raw.split('\n');
     const parts = [];
     let listItems = [];
@@ -723,7 +772,7 @@
         });
 
         // Final render: apply markdown and styled confidence/source elements.
-        const { body: mdBody, source, confidence } = parseAnswer(answer);
+        const { body: mdBody, source, confidence, followups } = parseAnswer(answer);
         answerEl.className = 'llm-answer-body';
         answerEl.innerHTML = renderMarkdown(mdBody);
         let insertAfter = answerEl;
@@ -743,9 +792,9 @@
 
         if (autoShuffled) return;
 
-        // Fetch AI-generated follow-up suggestions, fall back to static list.
-        const suggestions = await fetchSuggestions(q, answer);
-        currentChips = suggestions || manifest?.suggestedQuestions || null;
+        // Follow-up chips come from the answer's own [FOLLOWUPS] block; fall
+        // back to the static manifest list if the model omitted them.
+        currentChips = (followups && followups.length) ? followups : (manifest?.suggestedQuestions || null);
         renderChips(ui.chips, input, submit, currentChips);
       } catch (err) {
         clearTimeout(earthquakeTimer);
@@ -1096,22 +1145,7 @@
         : conversation.length - 2;
       const older = conversation.slice(0, Math.max(0, latestUserIdx));
 
-      // Expanded: the full thread reads top-to-bottom under a "Conversation"
-      // header. (Collapsed, the "Earlier" toggle lives in the actions row below.)
-      if (older.length && earlierExpanded) {
-        const header = el('div'); header.className = 'convo-header';
-        header.innerHTML =
-          '<span class="disclosure-caret">▴</span><span class="convo-title">Conversation</span><span class="convo-rule"></span>';
-        header.style.cursor = 'pointer';
-        header.addEventListener('click', () => { earlierExpanded = false; render(); });
-        thread.append(header);
-        older.forEach((t) => {
-          if (t.role === 'user') thread.append(youTurn(t.content));
-          else thread.append(answerTurn(t.content, { plain: true }));
-        });
-      }
-
-      // latest exchange
+      // Latest exchange at the top.
       if (latestUserIdx >= 0) thread.append(youTurn(conversation[latestUserIdx].content));
 
       if (streaming && lastIsUser) {
@@ -1126,6 +1160,24 @@
           })
         );
         shimmerPending = false; // one-shot: don't replay on later re-renders
+      }
+
+      // Expanded older exchanges below, newest pair first, Q before A within each pair.
+      if (older.length && earlierExpanded) {
+        const header = el('div'); header.className = 'convo-header';
+        header.innerHTML =
+          '<span class="disclosure-caret">▴</span><span class="convo-title">Earlier</span><span class="convo-rule"></span>';
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', () => { earlierExpanded = false; render(); });
+        thread.append(header);
+        const pairs = [];
+        for (let i = 0; i < older.length; i += 2) pairs.push(older.slice(i, i + 2));
+        pairs.reverse().forEach((pair) => {
+          pair.forEach((t) => {
+            if (t.role === 'user') thread.append(youTurn(t.content));
+            else thread.append(answerTurn(t.content, { plain: true }));
+          });
+        });
       }
 
       chat.append(thread);
@@ -1159,11 +1211,12 @@
 
       const liveAnswer = chat.querySelector('.answer.is-live');
       const statusEl = liveAnswer?.querySelector('.status-text');
+      const statuses = makeSTATUSES();
       let sIdx = 0;
-      if (statusEl) statusEl.textContent = STATUSES[0];
+      if (statusEl) statusEl.textContent = statuses[0];
       const statusTimer = setInterval(() => {
-        sIdx = (sIdx + 1) % STATUSES.length;
-        if (statusEl) statusEl.textContent = STATUSES[sIdx];
+        sIdx = (sIdx + 1) % statuses.length;
+        if (statusEl) statusEl.textContent = statuses[sIdx];
       }, 1500);
 
       let answer = '';
@@ -1220,11 +1273,10 @@
         shimmerPending = true;
         streaming = false;
         if (submitBtn) submitBtn.disabled = false;
-        // Show the answer right away with a "thinking of follow-ups" beat, then
-        // swap in the chips once the suggestions request resolves.
-        chipsLoading = true;
-        render();
-        currentChips = (await fetchSuggestions(q, answer)) || manifest?.suggestedQuestions || null;
+        // Follow-up chips ride inside the answer's own [FOLLOWUPS] block, so
+        // they're ready immediately — no second request. Fall back to static.
+        const { followups } = parseAnswer(answer);
+        currentChips = (followups && followups.length) ? followups : (manifest?.suggestedQuestions || null);
         chipsLoading = false;
         render();
       } catch (err) {

@@ -1,0 +1,20 @@
+# Never bake secrets or private data into the (public) image.
+.env
+.env.*
+!.env.example
+content/private-context.md
+content/*.private.md
+
+# Reproduce deps from the lockfile inside the image instead of copying host ones.
+node_modules
+
+# Runtime/output artifacts and noise.
+logs
+*.log
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+claude-design
+PLAN.md
