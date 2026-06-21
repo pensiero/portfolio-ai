@@ -6,7 +6,7 @@
 //   - conversation persisted in sessionStorage so the signature "shuffle"
 //     restyles the page WITHOUT losing the thread
 //   - suggested-question chips (dynamic follow-ups after each answer)
-//   - earthquake animation + style shuffle after 5 s of thinking
+//   - earthquake animation + style shuffle after a long wait, or on demand
 //   - persistent contact CTA, "What's behind this?" disclosure
 //
 // All injected UI inherits the host design's colours/fonts (currentColor /
@@ -18,8 +18,11 @@
   const CHAT_KEY = 'portfolio-chat-v1';
   const MAX_CHARS = 500;
   const MAX_HISTORY = 12;
-  const EARTHQUAKE_DELAY_MS = 5000;
-  const EARTHQUAKE_DURATION_MS = 2500;
+  const EARTHQUAKE_DELAY_MS = 120000; // slow-answer "thinking too long" trigger (2 min)
+  const EARTHQUAKE_DURATION_MS = 2000; // the shake lasts exactly 2s, then shuffle
+
+  // Cycling status lines shown in the loading skeleton (composite design).
+  const STATUSES = ['Reading my bio…', 'Connecting the dots…', 'Composing an answer…'];
 
   let manifest = null;
   let conversation = loadConversation(); // [{ role, content }]
@@ -169,11 +172,37 @@
     document.body.classList.remove('llm-shaking');
   }
   function shuffleStyle() {
-    try {
-      window.parent.postMessage({ type: 'portfolio-shuffle' }, '*');
-    } catch {
-      /* standalone page — ignore */
+    if (window.parent && window.parent !== window) {
+      try {
+        window.parent.postMessage({ type: 'portfolio-shuffle' }, '*');
+        return;
+      } catch {
+        /* fall through to standalone navigation */
+      }
     }
+    // Standalone (page opened directly, no launcher iframe): hop to the
+    // launcher and ask it to roll a fresh style.
+    location.href = '../index.html?shuffle=1';
+  }
+
+  // The Cards button itself morphs into the "Redesigning myself…" beat (three
+  // dots + label) during a shuffle. Built from currentColor so it inherits any
+  // theme.
+  function enterShuffleState() {
+    const btn = document.querySelector('[data-llm-shuffle]');
+    if (!btn || btn.classList.contains('is-shuffling')) return;
+    btn.classList.add('is-shuffling');
+    btn.disabled = true;
+    btn.innerHTML =
+      '<span class="dotwave"><span></span><span></span><span></span></span>' +
+      '<span class="shuffle-beat-text">Redesigning myself…</span>';
+  }
+
+  // Full shuffle transition: announce → shake for exactly 2s → swap style.
+  function triggerShuffleSequence() {
+    enterShuffleState();
+    triggerEarthquake();
+    setTimeout(shuffleStyle, EARTHQUAKE_DURATION_MS);
   }
 
   // ---- dynamic follow-up suggestions ----
@@ -317,7 +346,14 @@
   // ---- "What's behind this" disclosure (concept + repo link) ----
   function renderAbout(about) {
     const info = manifest?.about;
-    if (!about || !info || !(info.paragraphs?.length || info.repoUrl)) return;
+    if (!about || !info) return;
+
+    // Derive paragraphs from the structured manifest shape (lead + points),
+    // falling back to a legacy `paragraphs` array if present.
+    const paragraphs =
+      info.paragraphs ||
+      [info.lead, ...(info.points || []).map((p) => p.title + '. ' + p.body)].filter(Boolean);
+    if (!paragraphs.length && !info.repoUrl) return;
 
     const details = el('details');
     const summary = el('summary', {
@@ -330,7 +366,7 @@
     summary.textContent = info.label || "What's behind this?";
     details.append(summary);
 
-    for (const p of info.paragraphs || []) {
+    for (const p of paragraphs) {
       const para = el('p', { margin: '8px 0 0', lineHeight: '1.5', opacity: '0.95' });
       para.textContent = p;
       details.append(para);
@@ -526,6 +562,481 @@
     setupRotatingPlaceholders(input);
   }
 
+  // ==========================================================================
+  // COMPOSITE renderer — the rich "Direction E" design. Opt-in via
+  // <body data-llm-design="composite">. Only option-1 uses it today; the other
+  // styles keep the legacy renderer above untouched. Every cue is built from
+  // currentColor/inherit so this still ports to any theme when adopted later.
+  // ==========================================================================
+
+  function bindComposite(form) {
+    if (form.dataset.llmBound === '1') return;
+    form.dataset.llmBound = '1';
+
+    const input = form.querySelector('input[type="text"], input:not([type])');
+    const submitBtn = form.querySelector('button[type="submit"], .ask-submit');
+    if (!input) return;
+
+    // --- living input: rotating ghost + blinking caret while empty/unfocused
+    const ghostText = form.querySelector('.ghost-text');
+    const prompts = manifest?.suggestedQuestions || [];
+    let gi = 0;
+    const tickGhost = () => {
+      if (ghostText && prompts.length) ghostText.textContent = prompts[gi++ % prompts.length];
+    };
+    const refreshGhost = () => {
+      const hasText = input.value.trim().length > 0;
+      const active = document.activeElement === input || hasText;
+      form.classList.toggle('is-active', active);
+      // The "Ask" button only surfaces once the visitor has typed something.
+      form.classList.toggle('has-text', hasText);
+    };
+    tickGhost();
+    refreshGhost();
+    setInterval(() => {
+      if (!form.classList.contains('is-active')) tickGhost();
+    }, 2600);
+    input.addEventListener('focus', refreshGhost);
+    input.addEventListener('blur', refreshGhost);
+    input.addEventListener('input', refreshGhost);
+
+    // --- wire the Cards shuffle button
+    const shuffleBtn = document.querySelector('[data-llm-shuffle]');
+    if (shuffleBtn) {
+      shuffleBtn.addEventListener('click', () => {
+        if (!streaming) triggerShuffleSequence();
+      });
+    }
+
+    // --- wire the "What's behind this?" dock button (floating overlay)
+    const behindBtn = document.querySelector('[data-llm-behind]');
+    let behindOverlay = null;
+    function onBehindKey(e) {
+      if (e.key === 'Escape') closeBehind();
+    }
+    function closeBehind() {
+      if (behindOverlay) {
+        behindOverlay.remove();
+        behindOverlay = null;
+      }
+      behindBtn?.classList.remove('is-open');
+      behindBtn?.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('keydown', onBehindKey);
+    }
+    function openBehind() {
+      if (behindOverlay) return;
+      behindOverlay = buildBehindOverlay(closeBehind);
+      document.body.append(behindOverlay);
+      behindBtn?.classList.add('is-open');
+      behindBtn?.setAttribute('aria-expanded', 'true');
+      document.addEventListener('keydown', onBehindKey);
+    }
+    if (behindBtn) {
+      behindBtn.setAttribute('aria-expanded', 'false');
+      behindBtn.addEventListener('click', () => (behindOverlay ? closeBehind() : openBehind()));
+    }
+
+    // --- chat region rendered after the form
+    const chat = el('div');
+    chat.className = 'chat';
+    form.insertAdjacentElement('afterend', chat);
+
+    // view state
+    let earlierExpanded = false;
+    let justLanded = false; // newest answer just arrived → "new answer" flag
+    let shimmerPending = false; // play the one-shot rule shimmer on next render
+    let chipsLoading = false; // fetching follow-up suggestions for the latest answer
+    let currentChips = null; // follow-up suggestions for the latest answer
+
+    // ---- small builders -------------------------------------------------
+    function makeChip(label, small) {
+      const chip = el('button', {}, { type: 'button' });
+      chip.className = small ? 'chip chip-sm' : 'chip';
+      // Follow-up chips carry an "↗" affordance; the sent question stays clean.
+      chip.textContent = small ? label + ' ↗' : label;
+      chip.addEventListener('click', () => {
+        if (streaming) return;
+        input.value = label;
+        refreshGhost();
+        submit();
+      });
+      return chip;
+    }
+
+    function youTurn(text) {
+      const wrap = el('div'); wrap.className = 'turn-you';
+      const inner = el('div'); inner.className = 'inner';
+      const label = el('div'); label.className = 'you-label'; label.textContent = 'You';
+      const bubble = el('div'); bubble.className = 'you-bubble'; bubble.textContent = text;
+      inner.append(label, bubble);
+      wrap.append(inner);
+      return wrap;
+    }
+
+    // A completed Oscar answer. flag: 'new answer' | 'latest' | '' ; plain dims it.
+    function answerTurn(content, { flag = '', plain = false, shimmer = false, chips = null, chipsLoading = false } = {}) {
+      const wrap = el('div');
+      wrap.className = 'answer' + (plain ? ' is-plain' : '') + (flag === 'latest' || flag === 'new answer' ? ' is-latest' : '');
+      const rule = el('div'); rule.className = 'answer-rule';
+      wrap.append(rule);
+      if (shimmer) {
+        const sh = el('div'); sh.className = 'answer-shimmer';
+        wrap.append(sh);
+      }
+      const head = el('div'); head.className = 'answer-head';
+      const label = el('div'); label.className = 'answer-label'; label.textContent = 'Oscar AI';
+      head.append(label);
+      if (flag) {
+        const f = el('span'); f.className = 'answer-flag'; f.textContent = flag;
+        head.append(f);
+      }
+      wrap.append(head);
+
+      const { main, source } = splitCitation(content);
+      const body = el('div'); body.className = 'answer-body'; body.textContent = main;
+      wrap.append(body);
+      if (source) {
+        const src = el('div'); src.className = 'answer-source'; src.textContent = 'Source: ' + source;
+        wrap.append(src);
+      }
+      if (chipsLoading) {
+        // "Thinking about follow-ups" beat while suggestions are fetched.
+        const load = el('div'); load.className = 'answer-chips-loading';
+        load.innerHTML =
+          '<span class="dotwave"><span></span><span></span><span></span></span>' +
+          '<span class="chips-loading-text">Thinking of follow-ups…</span>';
+        wrap.append(load);
+      } else if (chips && chips.length) {
+        const row = el('div'); row.className = 'answer-chips';
+        for (const q of chips.slice(0, 3)) row.append(makeChip(q, true));
+        wrap.append(row);
+      }
+      return wrap;
+    }
+
+    // Live (streaming) Oscar slot: thinking skeleton, swapped for text on first token.
+    function liveAnswerSlot() {
+      const wrap = el('div'); wrap.className = 'answer is-live is-latest';
+      const rule = el('div'); rule.className = 'answer-rule';
+      wrap.append(rule);
+      const head = el('div'); head.className = 'thinking-head';
+      head.innerHTML =
+        '<span class="answer-label">Oscar AI</span>' +
+        '<span class="dotwave"><span></span><span></span><span></span></span>' +
+        '<span class="status-text"></span>';
+      wrap.append(head);
+      for (const w of ['100%', '94%', '68%']) {
+        const line = el('div', { width: w }); line.className = 'skeleton-line';
+        wrap.append(line);
+      }
+      return wrap;
+    }
+
+    function buildPopular() {
+      const frag = document.createDocumentFragment();
+      const head = el('div'); head.className = 'popular';
+      head.innerHTML = '<span class="popular-label">Popular questions</span><span class="popular-rule"></span>';
+      const row = el('div'); row.className = 'chips';
+      for (const q of (manifest?.suggestedQuestions || []).slice(0, 4)) row.append(makeChip(q));
+      frag.append(head, row);
+      return frag;
+    }
+
+    function buildFooter() {
+      const footer = el('div'); footer.className = 'footer';
+      const c = manifest?.contact || {};
+      const links = [];
+      if (c.email) links.push(['Email', 'mailto:' + c.email]);
+      if (c.linkedin) links.push(['LinkedIn', c.linkedin]);
+      if (c.github) links.push(['GitHub', c.github]);
+      if (links.length) {
+        const contact = el('div'); contact.className = 'footer-contact';
+        contact.append(document.createTextNode('Want the real Oscar? '));
+        links.forEach(([t, href], i) => {
+          if (i) contact.append(document.createTextNode(' · '));
+          const a = el('a'); a.href = href; a.textContent = t;
+          if (href.startsWith('http')) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+          contact.append(a);
+        });
+        footer.append(contact);
+      }
+      return footer;
+    }
+
+    // Earlier-toggle + Clear conversation, shown right after the thread.
+    function buildConvoActions(older) {
+      const actions = el('div'); actions.className = 'convo-actions';
+
+      if (older.length && !earlierExpanded) {
+        const n = Math.ceil(older.length / 2);
+        const bar = el('div'); bar.className = 'earlier-bar';
+        bar.innerHTML =
+          '<span class="disclosure-caret">▾</span> Earlier · ' +
+          '<span class="count">' + n + (n === 1 ? ' more exchange' : ' more exchanges') + '</span>';
+        bar.addEventListener('click', () => { earlierExpanded = true; render(); });
+        actions.append(bar);
+      }
+
+      const clear = el('button', {}, { type: 'button' });
+      clear.className = 'clear-btn';
+      clear.textContent = 'Clear conversation';
+      clear.addEventListener('click', () => {
+        if (streaming) return;
+        try { sessionStorage.removeItem(CHAT_KEY); } catch { /* ignore */ }
+        conversation = [];
+        currentChips = null;
+        earlierExpanded = false;
+        justLanded = false;
+        render();
+      });
+      actions.append(clear);
+      return actions;
+    }
+
+    // Floating "What's behind this?" overlay: a scrim + popover anchored above
+    // the dock. Mounted/unmounted on demand (not part of the chat render).
+    function buildBehindOverlay(onClose) {
+      const info = manifest?.about || {};
+
+      const overlay = el('div'); overlay.className = 'behind-overlay';
+      const scrim = el('div'); scrim.className = 'behind-scrim';
+      scrim.addEventListener('click', onClose);
+      overlay.append(scrim);
+
+      const panel = el('div'); panel.className = 'behind-panel';
+      panel.setAttribute('role', 'dialog');
+      panel.setAttribute('aria-modal', 'true');
+      panel.setAttribute('aria-label', info.label || "What's behind this?");
+
+      const head = el('div'); head.className = 'behind-head';
+      const eyebrow = el('div'); eyebrow.className = 'behind-eyebrow';
+      eyebrow.textContent = info.label || "What's behind this?";
+      const close = el('button', {}, { type: 'button' });
+      close.className = 'behind-close'; close.setAttribute('aria-label', 'Close');
+      close.textContent = '×';
+      close.addEventListener('click', onClose);
+      head.append(eyebrow, close);
+      panel.append(head);
+
+      if (info.lead) {
+        const lead = el('p'); lead.className = 'behind-lead';
+        lead.textContent = info.lead;
+        panel.append(lead);
+      }
+
+      if (info.points?.length) {
+        const list = el('div'); list.className = 'behind-points';
+        info.points.forEach((p, i) => {
+          const item = el('div'); item.className = 'behind-point';
+          const num = el('div'); num.className = 'behind-point-num';
+          num.textContent = String(i + 1).padStart(2, '0');
+          const txt = el('div');
+          const title = el('div'); title.className = 'behind-point-title'; title.textContent = p.title;
+          const body = el('p'); body.className = 'behind-point-body'; body.textContent = p.body;
+          txt.append(title, body);
+          item.append(num, txt);
+          list.append(item);
+        });
+        panel.append(list);
+      }
+
+      if (info.repoUrl) {
+        const src = el('div'); src.className = 'behind-source';
+        const strong = el('b');
+        // "Open source." stays plain; the rest becomes the repo link.
+        strong.textContent = 'Open source. ';
+        const a = el('a');
+        a.href = info.repoUrl;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = (info.repoLabel || "See how it's built") + ' ↗';
+        src.append(strong, a);
+        panel.append(src);
+      }
+
+      overlay.append(panel);
+      return overlay;
+    }
+
+    // ---- the one render path -------------------------------------------
+    function render() {
+      chat.textContent = '';
+
+      if (conversation.length === 0 && !streaming) {
+        chat.append(buildPopular());
+        chat.append(buildFooter());
+        return;
+      }
+
+      const thread = el('div'); thread.className = 'thread';
+
+      // Index of the latest user turn (the live/most-recent exchange).
+      const lastIsUser = conversation[conversation.length - 1]?.role === 'user';
+      const latestUserIdx = lastIsUser
+        ? conversation.length - 1
+        : conversation.length - 2;
+      const older = conversation.slice(0, Math.max(0, latestUserIdx));
+
+      // Expanded: the full thread reads top-to-bottom under a "Conversation"
+      // header. (Collapsed, the "Earlier" toggle lives in the actions row below.)
+      if (older.length && earlierExpanded) {
+        const header = el('div'); header.className = 'convo-header';
+        header.innerHTML =
+          '<span class="disclosure-caret">▴</span><span class="convo-title">Conversation</span><span class="convo-rule"></span>';
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', () => { earlierExpanded = false; render(); });
+        thread.append(header);
+        older.forEach((t) => {
+          if (t.role === 'user') thread.append(youTurn(t.content));
+          else thread.append(answerTurn(t.content, { plain: true }));
+        });
+      }
+
+      // latest exchange
+      if (latestUserIdx >= 0) thread.append(youTurn(conversation[latestUserIdx].content));
+
+      if (streaming && lastIsUser) {
+        thread.append(liveAnswerSlot());
+      } else if (!lastIsUser) {
+        thread.append(
+          answerTurn(conversation[conversation.length - 1].content, {
+            flag: justLanded ? 'new answer' : 'latest',
+            shimmer: shimmerPending,
+            chips: chipsLoading ? null : (currentChips || manifest?.suggestedQuestions || null),
+            chipsLoading
+          })
+        );
+        shimmerPending = false; // one-shot: don't replay on later re-renders
+      }
+
+      chat.append(thread);
+
+      // Actions sit right after the thread, before the footer separator:
+      // the "Earlier" toggle and "Clear conversation" together.
+      chat.append(buildConvoActions(older));
+
+      chat.append(buildFooter());
+    }
+
+    // ---- submit / stream -----------------------------------------------
+    async function submit() {
+      if (streaming) return;
+      const q = input.value.trim();
+      if (!q) return;
+      if (q.length > MAX_CHARS) {
+        alert(`Please keep it under ${MAX_CHARS} characters.`);
+        return;
+      }
+
+      justLanded = false;
+      streaming = true;
+      if (submitBtn) submitBtn.disabled = true;
+      input.value = '';
+      refreshGhost();
+
+      conversation.push({ role: 'user', content: q });
+      saveConversation();
+      render(); // draws the live thinking slot
+
+      const liveAnswer = chat.querySelector('.answer.is-live');
+      const statusEl = liveAnswer?.querySelector('.status-text');
+      let sIdx = 0;
+      if (statusEl) statusEl.textContent = STATUSES[0];
+      const statusTimer = setInterval(() => {
+        sIdx = (sIdx + 1) % STATUSES.length;
+        if (statusEl) statusEl.textContent = STATUSES[sIdx];
+      }, 1500);
+
+      let answer = '';
+      let firstToken = true;
+      let bodyEl = null;
+      let shuffled = false;
+      let assistantSaved = false;
+
+      // Persist the answer (whole or partial) exactly once so it survives the
+      // shuffle and rehydrates on the next style — no dangling question.
+      const saveAssistant = () => {
+        if (assistantSaved) return;
+        assistantSaved = true;
+        conversation.push({ role: 'assistant', content: answer || 'No answer returned.' });
+        saveConversation();
+      };
+
+      // "Thinking too long" → signature earthquake: shake for exactly 2s, then
+      // shuffle. If the answer lands during the shake it's saved in full first.
+      const eqTimer = setTimeout(() => {
+        shuffled = true;
+        enterShuffleState();
+        triggerEarthquake();
+        setTimeout(() => {
+          saveAssistant();
+          shuffleStyle();
+        }, EARTHQUAKE_DURATION_MS);
+      }, EARTHQUAKE_DELAY_MS);
+
+      const swapToBody = () => {
+        clearInterval(statusTimer);
+        liveAnswer.innerHTML =
+          '<div class="answer-rule"></div>' +
+          '<div class="answer-head"><div class="answer-label">Oscar AI</div></div>';
+        bodyEl = el('div'); bodyEl.className = 'answer-body';
+        liveAnswer.append(bodyEl);
+      };
+
+      try {
+        await streamAnswer(conversation.slice(-MAX_HISTORY), (delta) => {
+          if (firstToken) { firstToken = false; swapToBody(); }
+          answer += delta;
+          const { main } = splitCitation(answer);
+          if (bodyEl) bodyEl.textContent = main;
+          liveAnswer?.scrollIntoView({ block: 'nearest' });
+        });
+
+        clearTimeout(eqTimer);
+        clearInterval(statusTimer);
+        saveAssistant();
+
+        if (shuffled) {
+          // Shuffle is mid-flight; the full answer is now saved and will
+          // rehydrate on the next style. Leave the shaking page as-is.
+          return;
+        }
+
+        justLanded = true;
+        shimmerPending = true;
+        streaming = false;
+        if (submitBtn) submitBtn.disabled = false;
+        // Show the answer right away with a "thinking of follow-ups" beat, then
+        // swap in the chips once the suggestions request resolves.
+        chipsLoading = true;
+        render();
+        currentChips = (await fetchSuggestions(q, answer)) || manifest?.suggestedQuestions || null;
+        chipsLoading = false;
+        render();
+      } catch (err) {
+        clearTimeout(eqTimer);
+        clearInterval(statusTimer);
+        stopEarthquake();
+        conversation.pop(); // drop the unanswered question
+        saveConversation();
+        streaming = false;
+        if (submitBtn) submitBtn.disabled = false;
+        input.value = q; // let them retry
+        refreshGhost();
+        render();
+        const note = answerTurn(`Sorry — I couldn't answer that. (${err.message})`, { plain: true });
+        chat.querySelector('.thread')?.append(note) || chat.prepend(note);
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      submit();
+    });
+
+    render();
+  }
+
   async function init() {
     injectStyles();
     try {
@@ -535,10 +1046,15 @@
       manifest = null;
     }
 
-    applyCaption();
-
     const form =
       document.querySelector('form[data-llm-form]') || document.querySelector('form');
+
+    if (document.body.dataset.llmDesign === 'composite') {
+      if (form) bindComposite(form);
+      return;
+    }
+
+    applyCaption();
     if (form) bindForm(form);
   }
 

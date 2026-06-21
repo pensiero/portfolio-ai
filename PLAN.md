@@ -76,13 +76,13 @@ Adding a style = drop a file in `public/options/` + add one `manifest.json` entr
 
 ## Later
 
-- **Cloud model swap.** Move off local Ollama to a hosted model — evaluating DeepSeek V4 Flash / Pro via OpenCode or
-  another provider. Already abstracted in `lib/llm.js`: add a provider + flip `LLM_PROVIDER`. Revisit best-effort
-  citation quality once on the stronger model.
 - **Real bio content.** `content/private-context.md` is still placeholder — the product is only as good as the bio. Pull
   the real biography from its source repo (decide: git submodule vs build-time fetch).
 - **Retrieval / RAG.** When the bio grows past one file, retrieve relevant sections instead of stuffing the whole
   document into every prompt.
+- **Cloud model swap.** Move off local Ollama to a hosted model — evaluating DeepSeek V4 Flash / Pro via OpenCode or
+  another provider. Already abstracted in `lib/llm.js`: add a provider + flip `LLM_PROVIDER`. Revisit best-effort
+  citation quality once on the stronger model.
 - **Prompt caching.** Once on a caching-capable API, cache the static bio so it isn't re-billed per call (N/A to
   Ollama).
 

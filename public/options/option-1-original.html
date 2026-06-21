@@ -3,63 +3,65 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Option 1 — Original Prototype</title>
+    <title>Option 1 — The Composite</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Spline+Sans:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../styles.css" />
-    <style>
-      .style-shuffle {
-        position: fixed;
-        top: 14px;
-        right: 14px;
-        z-index: 9999;
-        font-size: 0.72rem;
-        line-height: 1;
-        text-decoration: none;
-        padding: 6px 9px;
-        border: 1px solid currentColor;
-        border-radius: 999px;
-        color: inherit;
-        background: rgba(255, 255, 255, 0.7);
-        opacity: 0.75;
-      }
-      .style-shuffle:hover { opacity: 1; }
-    </style>
   </head>
-  <body>
-    <a class="style-shuffle" href="../index.html" target="_top" aria-label="Shuffle style">shuffle style</a>
+  <!-- data-llm-design opts this page into the rich "Composite" renderer in
+       llm-hook.js. The other styles keep the legacy injected chat for now. -->
+  <body data-llm-design="composite">
     <main class="shell">
-      <div class="orb orb-a" aria-hidden="true"></div>
-      <div class="orb orb-b" aria-hidden="true"></div>
+      <section class="composite-card" aria-label="Ask Oscar AI">
+        <div class="presence">
+          <span class="presence-dot" aria-hidden="true">
+            <span class="presence-core"></span>
+            <span class="presence-ring"></span>
+          </span>
+          <span class="presence-label">I'm Oscar Fanelli</span>
+        </div>
 
-      <section class="search-card" aria-label="AI portfolio search">
-        <p class="kicker">I’m Oscar Fanelli</p>
-        <h1>What do you want to know about me?</h1>
-        <p class="hint" id="hintText">Try: “What can you build?”</p>
+        <h1>Curious about my work?</h1>
+        <p class="subhead">You're talking to a digitalized version of me, trained on what I've built. Ask about a project, my process, or how I work — it answers live.</p>
 
-        <form data-llm-form id="searchForm" class="search-form" autocomplete="off">
+        <form data-llm-form id="searchForm" class="ask-field" autocomplete="off">
           <label class="sr-only" for="queryInput">Ask something about Oscar</label>
           <input
             id="queryInput"
+            class="ask-input"
             name="q"
             type="text"
-            placeholder="Ask anything about my work, skills, ideas..."
-            maxlength="240"
+            maxlength="500"
+            aria-describedby="askGhost"
           />
-          <button id="submitBtn" type="submit" aria-label="Submit search">Ask</button>
+          <span class="ask-ghost" id="askGhost" aria-hidden="true">
+            <span class="ghost-text"></span>
+            <span class="ask-caret"></span>
+          </span>
+          <button class="ask-submit" type="submit" aria-label="Ask">Ask</button>
         </form>
 
-        <div id="result" class="result" hidden>
-          <p class="result-label">Answer</p>
-          <p id="resultText"></p>
-        </div>
+        <!-- llm-hook.js renders the chat region + footer here -->
       </section>
     </main>
 
+    <!-- Page-level action dock: floats at the bottom-right, outside the card.
+         "What's behind this?" opens the disclosure overlay (wired in llm-hook.js). -->
+    <div class="dock" aria-label="Page actions">
+      <button class="dock-btn shuffle-btn" data-llm-shuffle type="button" aria-label="Shuffle to another style">
+        <span class="shuffle-cards" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="dock-btn-text">Shuffle style</span>
+      </button>
+      <button class="dock-btn behind-trigger" data-llm-behind type="button">
+        <span class="behind-q" aria-hidden="true">?</span>
+        <span class="dock-btn-text">What's behind this?</span>
+      </button>
+    </div>
+
     <script src="../llm-hook.js"></script>
-</body>
+  </body>
 </html>

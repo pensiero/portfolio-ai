@@ -12,12 +12,19 @@
       background: #0b0b10;
       overflow: hidden;
     }
-    #stage {
+    .stage {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       border: 0;
       display: block;
       background: transparent;
+      opacity: 1;
+      transition: opacity 600ms ease;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .stage { transition: none; }
     }
     noscript {
       color: #e5e7eb;
@@ -29,52 +36,110 @@
   </style>
 </head>
 <body>
-  <iframe id="stage" title="Portfolio style"></iframe>
   <noscript>Enable JavaScript to load the randomized style.</noscript>
 
   <script>
     // The option list is manifest-driven — adding a style means dropping a file
     // in options/ and adding one manifest entry. No edits here.
-    const LAST_KEY = 'portfolio-last-style';
+    //
+    // First visit (no record) ALWAYS lands on option-1. A shuffle records the
+    // chosen style in localStorage, so a refresh stays on the shuffled style.
+    //
+    // A shuffle no longer hard-swaps the iframe src (which flashed). Instead we
+    // mount the new style in a fresh layered iframe and crossfade it in over the
+    // old one once it has fully loaded, then drop the old — no white flash, no
+    // visible reload. The conversation survives via sessionStorage as before.
+    const ACTIVE_KEY = 'portfolio-active-style';
+    const DEFAULT_STYLE = 'option-1-original.html';
+    const FADE_MS = 600;
 
-    async function loadRandomStyle() {
-      const stage = document.getElementById('stage');
+    let currentStage = null;
+
+    async function getFiles() {
+      const res = await fetch('options/manifest.json', { cache: 'no-cache' });
+      const manifest = await res.json();
+      return (manifest.options || []).map((o) => o.file).filter(Boolean);
+    }
+
+    function pickOther(files, current) {
+      if (files.length <= 1) return files[0];
+      const pool = files.filter((f) => f !== current);
+      return pool[Math.floor(Math.random() * pool.length)] || files[0];
+    }
+
+    // Mount a style in a new layered iframe. When `animate`, the incoming frame
+    // fades in on top of the current one (which stays fully opaque underneath),
+    // then the old frame is removed — a clean dissolve with no background dip.
+    function mountStyle(file, { animate } = {}) {
+      const frame = document.createElement('iframe');
+      frame.className = 'stage';
+      frame.title = 'Portfolio style';
+
+      if (!animate) {
+        frame.src = 'options/' + file;
+        document.body.append(frame);
+        currentStage = frame;
+        return;
+      }
+
+      const prev = currentStage;
+      frame.style.opacity = '0';
+      frame.src = 'options/' + file;
+      document.body.append(frame);
+      currentStage = frame;
+
+      frame.addEventListener(
+        'load',
+        () => {
+          requestAnimationFrame(() => { frame.style.opacity = '1'; });
+          setTimeout(() => { if (prev && prev.parentNode) prev.remove(); }, FADE_MS + 60);
+        },
+        { once: true }
+      );
+    }
+
+    async function boot() {
       try {
-        const res = await fetch('options/manifest.json', { cache: 'no-cache' });
-        const manifest = await res.json();
-        const files = (manifest.options || []).map((o) => o.file).filter(Boolean);
+        const files = await getFiles();
         if (!files.length) throw new Error('No options in manifest');
 
-        const prev = sessionStorage.getItem(LAST_KEY);
-        let pool = files.slice();
-        if (prev && pool.length > 1) pool = pool.filter((f) => f !== prev);
+        const forceShuffle = new URLSearchParams(location.search).has('shuffle');
+        const stored = localStorage.getItem(ACTIVE_KEY);
 
-        const chosen = pool[Math.floor(Math.random() * pool.length)] || files[0];
-        sessionStorage.setItem(LAST_KEY, chosen);
-        stage.src = 'options/' + chosen;
+        let chosen;
+        if (forceShuffle) {
+          chosen = pickOther(files, stored);
+        } else if (stored && files.includes(stored)) {
+          chosen = stored; // refresh: stay on the recorded (possibly shuffled) style
+        } else {
+          chosen = files.includes(DEFAULT_STYLE) ? DEFAULT_STYLE : files[0];
+        }
+
+        localStorage.setItem(ACTIVE_KEY, chosen);
+        mountStyle(chosen, { animate: false });
+
+        // Drop ?shuffle=1 from the URL so a later refresh doesn't re-roll.
+        if (forceShuffle) history.replaceState(null, '', location.pathname);
       } catch (err) {
         // Fallback so the page is never blank if the manifest fails to load.
-        stage.src = 'options/option-1-original.html';
+        mountStyle(DEFAULT_STYLE, { animate: false });
         console.error('Failed to load manifest:', err);
       }
     }
 
-    loadRandomStyle();
+    boot();
 
-    // When a style page triggers the earthquake shuffle, pick a new random style.
+    // When a style page triggers a shuffle (button or earthquake), roll a new
+    // style, record it, and crossfade it in without a hard reload.
     window.addEventListener('message', async (e) => {
       if (e.data?.type !== 'portfolio-shuffle') return;
-      const stage = document.getElementById('stage');
       try {
-        const res = await fetch('options/manifest.json', { cache: 'no-cache' });
-        const manifest = await res.json();
-        const files = (manifest.options || []).map((o) => o.file).filter(Boolean);
+        const files = await getFiles();
         if (!files.length) return;
-        const current = sessionStorage.getItem(LAST_KEY);
-        const pool = files.length > 1 ? files.filter((f) => f !== current) : files;
-        const chosen = pool[Math.floor(Math.random() * pool.length)] || files[0];
-        sessionStorage.setItem(LAST_KEY, chosen);
-        stage.src = 'options/' + chosen;
+        const current = localStorage.getItem(ACTIVE_KEY);
+        const chosen = pickOther(files, current);
+        localStorage.setItem(ACTIVE_KEY, chosen);
+        mountStyle(chosen, { animate: true });
       } catch {}
     });
   </script>

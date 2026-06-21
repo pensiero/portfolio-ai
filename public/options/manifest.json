@@ -8,10 +8,13 @@
     "label": "What's behind this?",
     "repoUrl": "https://github.com/pensiero/portfolio-ai",
     "repoLabel": "See how it's built",
-    "paragraphs": [
-      "This isn't a CV or a LinkedIn export. You're talking to a conversational layer over a living professional profile — a structured knowledge base about how I work, think, and make decisions that I built and continuously refine together with AI. It evolves as I do.",
-      "And I don't just publish it — I use it. It's become a tool I consult to pressure-test decisions, recall my own past reasoning, and weigh a choice against a model of how I actually think. The system answering your questions is one I rely on myself."
-    ]
+    "lead": "You're not reading a CV. Every answer here is generated live by a language model, grounded in a private, evolving picture of how I actually think and work — and it only ever talks about Oscar.",
+    "points": [
+      { "title": "Live, not pre-written", "body": "Each reply is composed in the moment from a private brief about my work — never read off a fixed page." },
+      { "title": "A model of me, not a file", "body": "The source isn't a frozen document. It's a structured, digital version of how I reason, decide, and build that I refine continuously — it evolves as I do." },
+      { "title": "And I rely on it myself", "body": "Beyond this page, I consult that same digital version of myself to pressure-test decisions, revisit my own past reasoning, and move faster on real work." }
+    ],
+    "openSource": "Open source. See how it's built."
   },
   "suggestedQuestions": [
     "What can you build?",

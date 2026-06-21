@@ -1,27 +1,35 @@
+/* ============================================================================
+   Option 1 — "The Composite" (Direction E)
+   The signature/original layout. Every cue (presence dot, caret, answer rule,
+   skeleton, card glyph, disclosure markers) is built from currentColor + opacity
+   / color-mix, so the whole thing ports to any theme untouched.
+   This file is option-1 only.
+   ========================================================================== */
+
 :root {
   --bg: #ffffff;
-  --panel: #ffffff;
-  --text: #0f172a;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --accent: #0f172a;
-  --accent-2: #0f172a;
-  --font-body: Sora, Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  --font-head: "Space Grotesk", Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --card-bg: #ffffff;
+  --ink: #16202b;
+  --font-head: "Bricolage Grotesque", "Space Grotesk", Inter, system-ui, sans-serif;
+  --font-body: "Spline Sans", Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+  /* Theme-portable fills/lines derived from the host text colour. */
+  --line: color-mix(in srgb, currentColor 12%, transparent);
+  --line-soft: color-mix(in srgb, currentColor 8%, transparent);
+  --chip-line: color-mix(in srgb, currentColor 26%, transparent);
+  --bubble-bg: color-mix(in srgb, currentColor 8%, transparent);
+  --answer-bg: color-mix(in srgb, currentColor 4%, transparent);
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   font-family: var(--font-body);
-  color: var(--text);
+  color: var(--ink);
   background: var(--bg);
 }
 
@@ -29,124 +37,589 @@ body {
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: clamp(16px, 4vw, 56px);
+}
+
+/* ---------------------------------------------------------------- the card */
+.composite-card {
   position: relative;
-  overflow: hidden;
-}
-
-.search-card {
-  width: min(780px, 100%);
-  background: var(--panel);
+  width: min(640px, 100%);
+  background: var(--card-bg);
+  color: var(--ink);
+  border-radius: 4px;
   border: 1px solid var(--line);
-  border-radius: 20px;
-  padding: clamp(24px, 4vw, 40px);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+  padding: clamp(26px, 4vw, 42px);
 }
 
-.kicker {
-  margin: 0 0 10px;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  font-family: var(--font-head);
-  font-weight: 500;
-}
-
-h1 {
-  margin: 0;
-  font-family: var(--font-head);
-  font-size: clamp(2rem, 5.4vw, 3.2rem);
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-  color: var(--text);
-}
-
-.hint {
-  margin: 14px 0 24px;
-  color: var(--muted);
-  font-size: 0.98rem;
-}
-
-.search-form {
-  display: grid;
-  grid-template-columns: 1fr auto;
+/* -------------------------------------- page action dock (bottom-right) */
+/* Floats outside the card, fixed to the viewport corner. Holds the Shuffle
+   and "What's behind this?" buttons side by side. */
+.dock {
+  position: fixed;
+  right: clamp(14px, 2.5vw, 26px);
+  bottom: clamp(14px, 2.5vw, 26px);
+  z-index: 40;
+  display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 8px;
-  background: #fff;
+}
+.dock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+  border-radius: 100px;
+  padding: 9px 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  opacity: 0.94;
+  transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.dock-btn:hover { opacity: 1; box-shadow: 0 6px 22px rgba(0, 0, 0, 0.14); }
+.dock-btn:active { transform: scale(0.97); }
+.dock-btn-text { white-space: nowrap; }
+
+/* during a shuffle the button itself becomes the "Redesigning myself…" beat */
+.shuffle-btn.is-shuffling { opacity: 1; cursor: default; }
+.shuffle-btn .shuffle-beat-text { white-space: nowrap; }
+
+/* three mini-cards that re-deal on idle; fill = card bg so they occlude
+   correctly on every theme (dark themes included). */
+.shuffle-cards {
+  position: relative;
+  display: inline-block;
+  width: 15px;
+  height: 12px;
+  flex: none;
+}
+.shuffle-cards i {
+  position: absolute;
+  width: 9px;
+  height: 11px;
+  border: 1.5px solid currentColor;
+  border-radius: 2.5px;
+  background: var(--card-bg);
+  animation: deal 2.4s ease-in-out infinite;
+}
+.shuffle-cards i:nth-child(1) { left: 0; top: 1px; }
+.shuffle-cards i:nth-child(2) { left: 3px; top: 0.5px; animation-delay: 0.3s; }
+.shuffle-cards i:nth-child(3) { left: 6px; top: 0; animation-delay: 0.6s; }
+
+/* ------------------------------------------------------ breathing presence */
+.presence {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.presence-dot {
+  position: relative;
+  flex: none;
+  width: 10px;
+  height: 10px;
+}
+.presence-core,
+.presence-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.presence-core {
+  background: currentColor;
+  animation: breathe 3.2s ease-in-out infinite;
+}
+.presence-ring {
+  border: 1.5px solid currentColor;
+  animation: ring 3.2s ease-out infinite;
+}
+.presence-label {
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.6;
 }
 
-.search-form:focus-within {
-  border-color: #cbd5e1;
+/* ------------------------------------------------------------- title block */
+.composite-card h1 {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: clamp(1.85rem, 5.4vw, 2.35rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+  color: inherit;
+}
+.subhead {
+  font-size: 1rem;
+  line-height: 1.5;
+  opacity: 0.72;
+  margin: 0 0 24px;
 }
 
-.search-form input {
-  width: 100%;
+/* --------------------------------------------------------- the living input */
+.ask-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1.5px solid color-mix(in srgb, currentColor 50%, transparent);
+  border-radius: 11px;
+  padding: 0 8px 0 18px;
+  height: 60px;
+  transition: border-color 160ms ease;
+}
+.ask-field:focus-within {
+  border-color: currentColor;
+}
+.ask-input {
+  flex: 1;
+  min-width: 0;
   border: 0;
   outline: 0;
   background: transparent;
-  color: var(--text);
-  font-size: 1.03rem;
-  padding: 10px 12px;
   font-family: var(--font-body);
+  font-size: 17px;
+  color: inherit;
 }
-
-.search-form input::placeholder {
-  color: #94a3b8;
-}
-
-.search-form button {
-  border: 0;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.9rem;
-  font-family: var(--font-head);
-  letter-spacing: 0.01em;
-  border-radius: 10px;
-  padding: 10px 16px;
-  cursor: pointer;
-  opacity: 0;
-  transform: translateX(10px);
+/* ghost + blinking caret shown only while empty & unfocused */
+.ask-ghost {
+  position: absolute;
+  left: 18px;
+  right: 96px;
+  display: flex;
+  align-items: center;
   pointer-events: none;
-  transition: all 220ms ease;
+  font-size: 17px;
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
 }
-
-.search-form button.show {
-  opacity: 1;
-  transform: translateX(0);
-  pointer-events: auto;
+.ask-ghost .ghost-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 200ms ease;
 }
-
-.search-form button:hover {
-  background: #1e293b;
+.ask-caret {
+  flex: none;
+  display: inline-block;
+  width: 2px;
+  height: 22px;
+  margin-left: 2px;
+  background: currentColor;
+  animation: caretBlink 1.05s step-end infinite;
 }
-
-.result {
-  margin-top: 18px;
-  border-top: 1px solid var(--line);
-  padding-top: 16px;
+.ask-field.is-active .ask-ghost { display: none; }
+.ask-submit {
+  flex: none;
+  display: none; /* surfaces only once the visitor starts typing */
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--card-bg);
+  background: var(--ink); /* filled with the host ink; text = card bg for contrast */
+  border: none;
+  border-radius: 8px;
+  height: 44px;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: opacity 160ms ease;
 }
+.ask-submit:disabled { opacity: 0.5; cursor: default; }
+.ask-field.has-text .ask-submit { display: block; }
 
-.result-label {
-  margin: 0 0 6px;
-  color: var(--muted);
-  font-size: 0.78rem;
+/* ============================== injected chat region ====================== */
+.chat { margin-top: 4px; }
+
+/* popular questions (empty state) */
+.popular {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 22px 0 12px;
+}
+.popular-label {
+  font-size: 12px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-weight: 600;
+  opacity: 0.55;
+}
+.popular-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.chip {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: inherit;
+  background: transparent;
+  border: 1.5px solid var(--chip-line);
+  border-radius: 100px;
+  padding: 10px 17px;
+  cursor: pointer;
+  transition: background 140ms ease, transform 140ms ease;
+}
+.chip:hover { background: var(--bubble-bg); }
+.chip:active { transform: scale(0.97); }
+.chip.chip-sm { font-size: 13.5px; font-weight: 500; padding: 7px 13px; }
+
+/* "You" bubble */
+.turn-you {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+  animation: rowGrow 0.4s ease both;
+}
+.turn-you .inner { max-width: 82%; }
+.you-label,
+.answer-label {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.55;
+  margin-bottom: 6px;
+}
+.you-label { text-align: right; }
+.you-bubble {
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: inherit;
+  background: var(--bubble-bg);
+  border-radius: 14px 14px 4px 14px;
+  padding: 10px 15px;
+  white-space: pre-wrap;
 }
 
-#resultText,
-.result p {
+/* Oscar AI answer */
+.answer {
+  position: relative;
+  margin-top: 16px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: var(--answer-bg);
+  animation: ansIn 0.5s ease both;
+}
+.answer.is-plain { background: transparent; padding: 14px 18px; }
+.answer-rule {
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 3px;
+  background: currentColor;
+  opacity: 0.55;
+}
+.answer.is-latest .answer-rule { opacity: 1; }
+/* one-shot shimmer down the rule when an answer first lands */
+.answer-shimmer {
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 3px;
+  background: currentColor;
+  transform-origin: top;
+  animation: shimmerLine 1.6s ease-out forwards;
+  pointer-events: none;
+}
+.answer-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.answer-head .answer-label { margin-bottom: 0; }
+.answer-flag {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: inherit;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-radius: 100px;
+  padding: 2px 8px;
+}
+.answer-body {
+  font-size: 16px;
+  line-height: 1.6;
+  color: inherit;
+  white-space: pre-wrap;
+}
+.answer.is-plain .answer-body { font-size: 15px; line-height: 1.55; }
+.answer-source {
+  margin-top: 10px;
+  font-size: 12.5px;
+  opacity: 0.55;
+}
+.answer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.answer-chips-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 12.5px;
+  opacity: 0.55;
+}
+
+/* thinking slot: dotwave + cycling status + skeleton */
+.thinking-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.dotwave { display: flex; gap: 3px; }
+.dotwave span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: dotwave 1.1s ease-in-out infinite;
+}
+.dotwave span:nth-child(2) { animation-delay: 0.18s; }
+.dotwave span:nth-child(3) { animation-delay: 0.36s; }
+.status-text { font-size: 13px; opacity: 0.6; }
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  margin-bottom: 9px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, currentColor 6%, transparent) 25%,
+    color-mix(in srgb, currentColor 16%, transparent) 50%,
+    color-mix(in srgb, currentColor 6%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton 1.4s linear infinite;
+}
+.skeleton-line:last-child { margin-bottom: 0; }
+.skeleton-line:nth-child(2) { animation-delay: 0.2s; }
+.skeleton-line:nth-child(3) { animation-delay: 0.4s; }
+
+/* "Earlier" collapse / "Conversation" header */
+.earlier-bar,
+.convo-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+.earlier-bar { cursor: pointer; }
+.earlier-bar:hover { opacity: 1; }
+.disclosure-caret { opacity: 0.7; }
+.earlier-bar .count,
+.convo-title {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 10.5px;
+}
+.convo-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* conversation actions: "Earlier · N more exchanges" + "Clear conversation"
+   sit together right after the thread, before the footer separator. */
+.convo-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+.convo-actions .earlier-bar { margin-top: 0; }
+.convo-actions .clear-btn { margin-top: 0; }
+
+/* footer: persistent contact + "what's behind this?" + clear */
+.footer {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13.5px;
+  opacity: 0.92;
+}
+.footer a { color: inherit; }
+.footer-contact { opacity: 0.85; }
+
+/* "What's behind this?" lives in the dock now; its open state highlights the
+   pill, and it carries the small "?" glyph. */
+.behind-trigger.is-open {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--ink) 38%, transparent);
+}
+.behind-trigger .behind-q {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+}
+.clear-btn {
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin-left: auto;
+  cursor: pointer;
+  opacity: 0.55;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.clear-btn:hover { opacity: 0.85; }
+
+/* ===================== "What's behind this?" overlay ====================== */
+/* Opened from the dock; a floating popover anchored above the buttons, over a
+   soft scrim so the disclosure has focus. */
+.behind-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+.behind-scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ink) 32%, transparent);
+  backdrop-filter: blur(2px);
+  animation: scrimIn 0.25s ease both;
+}
+.behind-panel {
+  position: absolute;
+  right: clamp(14px, 2.5vw, 26px);
+  bottom: clamp(64px, 9vh, 84px);
+  width: min(420px, calc(100vw - 28px));
+  max-height: min(76vh, 640px);
+  overflow-y: auto;
+  background: var(--card-bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+  padding: 22px 24px 24px;
+  transform-origin: bottom right;
+  animation: behindIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.behind-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.behind-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.55;
+}
+.behind-close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -4px -6px -4px 0;
+  font-size: 19px;
+  line-height: 1;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 140ms ease, background 140ms ease;
+}
+.behind-close:hover { opacity: 0.95; background: var(--bubble-bg); }
+.behind-lead {
+  font-size: 16px;
+  line-height: 1.55;
+  margin: 0 0 18px;
+}
+.behind-lead b { font-weight: 600; }
+.behind-points {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-soft);
+}
+.behind-point { display: flex; gap: 12px; }
+.behind-point-num {
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  opacity: 0.4;
+  padding-top: 2px;
+}
+.behind-point-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 2px;
+}
+.behind-point-body {
+  font-size: 13.5px;
+  line-height: 1.5;
+  opacity: 0.8;
   margin: 0;
-  line-height: 1.45;
-  color: var(--text);
+}
+.behind-source {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13.5px;
+  opacity: 0.85;
+}
+.behind-source a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+.behind-source a:hover { opacity: 1; }
+
+@media (max-width: 460px) {
+  .behind-panel {
+    right: 14px;
+    left: 14px;
+    width: auto;
+    bottom: 76px;
+  }
 }
 
-.orb {
-  display: none;
+@media (max-width: 460px) {
+  .composite-card h1 { font-size: 1.6rem; }
+  .ask-submit { padding: 0 16px; }
+  .dock-btn { font-size: 12px; padding: 8px 13px; }
 }
 
 .sr-only {
@@ -158,4 +631,25 @@ h1 {
   padding: 0;
   clip: rect(0 0 0 0);
   overflow: hidden;
+}
+
+/* -------------------------------------------------------------- keyframes */
+@keyframes caretBlink { 0%, 45% { opacity: 1; } 55%, 100% { opacity: 0; } }
+@keyframes breathe { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.32); opacity: 0.95; } }
+@keyframes ring { 0% { transform: scale(0.55); opacity: 0.55; } 100% { transform: scale(2.4); opacity: 0; } }
+@keyframes ansIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes dotwave { 0%, 100% { opacity: 0.25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+@keyframes shimmerLine { 0% { transform: scaleY(0); opacity: 0.9; } 100% { transform: scaleY(1); opacity: 0; } }
+@keyframes skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@keyframes deal { 0%, 100% { transform: translate(0, 0) rotate(0); } 30% { transform: translate(3px, -3px) rotate(9deg); } 60% { transform: translate(-2px, 1px) rotate(-5deg); } }
+@keyframes rowGrow { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes scrimIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes behindIn { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .presence-core, .presence-ring, .ask-caret, .shuffle-cards i,
+  .dotwave span, .skeleton-line, .answer-shimmer,
+  .answer, .turn-you, .behind-panel, .behind-scrim {
+    animation: none !important;
+  }
 }
