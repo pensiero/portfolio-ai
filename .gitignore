@@ -19,3 +19,6 @@ content/*.private.md
 .DS_Store
 .idea/
 .vscode/
+
+AGENTS.md
+CLAUDE.md
