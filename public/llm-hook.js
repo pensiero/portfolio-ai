@@ -889,7 +889,7 @@
     function buildPopular() {
       const frag = document.createDocumentFragment();
       const head = el('div'); head.className = 'popular';
-      head.innerHTML = '<span class="popular-label">Popular questions</span><span class="popular-rule"></span>';
+      head.innerHTML = '<span class="popular-label">popular questions</span><span class="popular-rule"></span>';
       const row = el('div'); row.className = 'chips';
       for (const q of (manifest?.suggestedQuestions || []).slice(0, 4)) row.append(makeChip(q));
       frag.append(head, row);

@@ -8,20 +8,22 @@
     "label": "What's behind this?",
     "repoUrl": "https://github.com/pensiero/portfolio-ai",
     "repoLabel": "See how it's built",
-    "lead": "You're not reading a CV. Every answer here is generated live by a language model, grounded in a private, evolving picture of how I actually think and work — and it only ever talks about Oscar.",
+    "lead": "You're not reading a CV. Every answer is generated live by a LLM, grounded in a private, evolving picture of how Oscar Fanelli thinks and works.",
     "points": [
-      { "title": "Live, not pre-written", "body": "Each reply is composed in the moment from a private brief about my work — never read off a fixed page." },
-      { "title": "A model of me, not a file", "body": "The source isn't a frozen document. It's a structured, digital version of how I reason, decide, and build that I refine continuously — it evolves as I do." },
-      { "title": "And I rely on it myself", "body": "Beyond this page, I consult that same digital version of myself to pressure-test decisions, revisit my own past reasoning, and move faster on real work." }
+      { "title": "Live", "body": "Each reply is composed in the moment." },
+      { "title": "A model of me", "body": "The source is refined day by day — it evolves as I do. Here simplified and exposed with guardrails." },
+      { "title": "I rely on it myself", "body": "Beyond this page, I consult that same digital version of myself to pressure-test decisions, revisit my past reasoning, and move faster on real work." },
+      { "title": "It can get me wrong", "body": "It's an interpretation, so it can misread or oversimplify. For anything that really matters, please talk to the real Oscar. When it doesn't know, your question is recorded so I can answer it here in the future." }
     ],
     "openSource": "Open source. See how it's built."
   },
   "suggestedQuestions": [
-    "What can you build?",
-    "What's your management style?",
-    "Tell me about a hard technical decision you made",
-    "How do you approach scaling a team?",
-    "Are you open to new opportunities?"
+    "What is Oscar doing at InPost?",
+    "What startups has Oscar founded?",
+    "What's Oscar's management style?",
+    "How is Oscar using AI?",
+    "Where has Oscar worked?",
+    "What is Oscar looking for next?"
   ],
   "options": [
     { "file": "option-1-original.html", "title": "Original Prototype", "caption": "Profile: Oscar Fanelli · Interface: Original Query Prototype" },
