@@ -1,7 +1,118 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Option 7 — Detective Dossier</title><style>body{margin:0;min-height:100vh;background:#12100f;color:#f2eadf;font-family:ui-monospace,Menlo,monospace;display:grid;place-items:center;padding:20px}.sheet{width:min(860px,100%);background:#1b1714;border:1px solid #4a3f36;padding:22px;box-shadow:0 20px 80px rgba(0,0,0,.45)}.stamp{display:inline-block;border:1px solid #c56b52;color:#e48a70;padding:4px 8px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}h1{margin:0 0 10px;font-size:clamp(1.5rem,4vw,2.4rem)}.meta{color:#b8a997;margin-bottom:20px}.form{display:grid;grid-template-columns:auto 1fr auto;gap:10px;border:1px dashed #635344;padding:10px;align-items:center}.tag{color:#e7c59d}input{border:0;outline:0;background:transparent;color:#f2eadf;font:inherit}button{border:1px solid #7f6a57;background:#2c241f;color:#f2eadf;padding:8px 12px;opacity:0;pointer-events:none}button.show{opacity:1;pointer-events:auto}
-.style-shuffle{position:fixed;top:14px;right:14px;z-index:9999;font-size:.72rem;line-height:1;text-decoration:none;padding:6px 9px;border:1px solid currentColor;border-radius:999px;color:inherit;background:rgba(255,255,255,.08);opacity:.75;backdrop-filter:blur(2px)}
-.style-shuffle:hover{opacity:1}
-</style></head><body><section class="sheet"><div class="stamp">PERSON OF INTEREST</div><h1>What do you want to know about me?</h1><div class="meta">Subject: Oscar Fanelli · Interface: Query Dossier</div><form data-llm-form id="f" class="form"><span class="tag">case#</span><input id="q" placeholder="state your question"><button id="b">investigate</button></form></section><a class="style-shuffle" href="../index.html" target="_top" aria-label="Shuffle style">shuffle style</a>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Option 7 — Detective Dossier</title>
+  <style>
+    :root { --card-bg: #1b1714; }
 
-<script src="../llm-hook.js"></script>
-</body></html>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0; min-height: 100vh;
+      background: #12100f; color: #f2eadf;
+      font-family: ui-monospace, Menlo, monospace;
+      display: grid; place-items: center; padding: 20px;
+    }
+
+    .sheet {
+      width: min(860px,100%);
+      background: #1b1714;
+      border: 1px solid #4a3f36;
+      padding: 22px;
+      box-shadow: 0 20px 80px rgba(0,0,0,.45);
+    }
+
+    .stamp {
+      display: inline-block;
+      border: 1px solid #c56b52; color: #e48a70;
+      padding: 4px 8px;
+      font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 { margin: 0 0 12px; font-size: clamp(1.5rem,4vw,2.4rem); }
+
+    /* presence: sepia muted label */
+    .presence-label { color: #b8a997; }
+    .presence { margin-bottom: 12px; }
+
+    /* ask field: dashed detective style */
+    .ask-field {
+      border: 1px dashed #635344 !important;
+      border-radius: 0 !important;
+      background: transparent;
+    }
+    .ask-field:focus-within { border-color: #e7c59d !important; }
+
+    /* case number prefix */
+    .case-prefix {
+      color: #e7c59d; font-size: 13px; flex: none;
+      padding-right: 8px; border-right: 1px dashed #635344; margin-right: 4px;
+    }
+    .ask-ghost { left: 82px !important; }
+
+    /* submit: dossier-style */
+    .ask-submit {
+      background: #2c241f !important;
+      color: #f2eadf !important;
+      border: 1px solid #7f6a57 !important;
+      border-radius: 0 !important;
+      font-family: inherit;
+      letter-spacing: .04em;
+    }
+    .ask-submit:hover { background: #3d3028 !important; }
+
+    /* dock: dark dossier */
+    .dock-btn {
+      background: #1b1714 !important;
+      border-color: #4a3f36 !important;
+    }
+  </style>
+</head>
+<body data-llm-design="composite">
+  <main style="display:grid;place-items:center;min-height:100dvh;padding:20px;width:100%">
+    <section class="sheet" aria-label="Ask Oscar AI">
+
+      <div class="presence">
+        <span class="stamp" style="margin-bottom:0;display:inline-flex;align-items:center;gap:8px">
+          <span class="presence-dot" aria-hidden="true" style="position:relative;flex:none;width:10px;height:10px">
+            <span class="presence-core"></span>
+            <span class="presence-ring"></span>
+          </span>
+          Subject: Oscar Fanelli
+        </span>
+      </div>
+
+      <h1>Curious about my work?</h1>
+      <p class="subhead">You're talking to a digitalized version of me, trained on what I've built. Ask about a project, my process, or how I work — it answers live.</p>
+
+      <form data-llm-form class="ask-field" autocomplete="off">
+        <label class="sr-only" for="queryInput">Ask something about Oscar</label>
+        <span class="case-prefix" aria-hidden="true">case#</span>
+        <input id="queryInput" class="ask-input" name="q" type="text" maxlength="500" aria-describedby="askGhost" />
+        <span class="ask-ghost" id="askGhost" aria-hidden="true">
+          <span class="ghost-text"></span>
+          <span class="ask-caret"></span>
+        </span>
+        <button class="ask-submit" type="submit" aria-label="Ask">investigate</button>
+      </form>
+
+    </section>
+  </main>
+
+  <div class="dock" aria-label="Page actions">
+    <button class="dock-btn shuffle-btn" data-llm-shuffle type="button" aria-label="Shuffle to another style">
+      <span class="shuffle-cards" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="dock-btn-text">Shuffle style</span>
+    </button>
+    <button class="dock-btn behind-trigger" data-llm-behind type="button">
+      <span class="behind-q" aria-hidden="true">?</span>
+      <span class="dock-btn-text">What's behind this?</span>
+    </button>
+  </div>
+
+  <script src="../llm-hook.js"></script>
+</body>
+</html>

@@ -1,7 +1,122 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Option 18 — Swiss Poster</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet"><style>:root{--accent:#e11d48}body{margin:0;min-height:100vh;background:#fff;color:#0b0b0b;font-family:Inter,sans-serif;display:grid;place-items:center;padding:24px}.poster{width:min(980px,100%);display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.bar{grid-column:1/13;height:8px;background:var(--accent)}.k{grid-column:1/5;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:#52525b}.h{grid-column:1/10;font-size:clamp(2rem,6vw,4.6rem);font-weight:800;line-height:.94;letter-spacing:-.03em;margin:0}.sub{grid-column:10/13;color:#52525b;align-self:end}.form{grid-column:1/13;display:grid;grid-template-columns:1fr auto;gap:8px;border:2px solid #0b0b0b;padding:8px}input{border:0;outline:0;padding:12px;font-size:1rem}button{border:0;background:#0b0b0b;color:#fff;padding:0 15px;font-weight:700;opacity:0;pointer-events:none}button.show{opacity:1;pointer-events:auto}@media(max-width:900px){.k,.h,.sub,.form{grid-column:1/13}}
-.style-shuffle{position:fixed;top:14px;right:14px;z-index:9999;font-size:.72rem;line-height:1;text-decoration:none;padding:6px 9px;border:1px solid currentColor;border-radius:999px;color:inherit;background:rgba(255,255,255,.08);opacity:.75;backdrop-filter:blur(2px)}
-.style-shuffle:hover{opacity:1}
-</style></head><body><main class="poster"><div class="bar"></div><div class="k">I’m Oscar Fanelli · Option 18</div><h1 class="h">What do you want to know about me?</h1><p class="sub">Query-first portfolio</p><form data-llm-form id="f" class="form"><input id="q" placeholder="Ask directly"><button id="b">Go</button></form></main><a class="style-shuffle" href="../index.html" target="_top" aria-label="Shuffle style">shuffle style</a>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Option 18 — Minimal Swiss Poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --card-bg: #ffffff; --accent: #e11d48; }
 
-<script src="../llm-hook.js"></script>
-</body></html>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0; min-height: 100vh;
+      background: #fff; color: #0b0b0b;
+      font-family: Inter, sans-serif;
+      display: grid; place-items: center; padding: 24px;
+    }
+
+    /* Swiss 12-column grid */
+    .poster {
+      width: min(980px,100%);
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .bar { grid-column: 1/13; height: 8px; background: var(--accent); }
+
+    /* presence spans cols 1–5 (where the eyebrow was) */
+    .presence { grid-column: 1/6; align-self: end; margin-bottom: 0; }
+    .presence-label { color: #52525b; font-size: 11px; letter-spacing: .14em; }
+
+    h1 {
+      grid-column: 1/10;
+      font-size: clamp(2rem,6vw,4.6rem); font-weight: 800;
+      line-height: .94; letter-spacing: -.03em; margin: 0;
+    }
+
+    /* subhead: Swiss sidebar column.
+       !important on layout/visual props because injected composite CSS
+       (appended to <head> at runtime) wins same-specificity cascade. */
+    .subhead {
+      grid-column: 10/13;
+      font-size: .88rem !important; color: #52525b;
+      align-self: end; margin: 0 !important;
+      opacity: 1 !important;
+    }
+
+    /* form: full width */
+    .ask-field {
+      grid-column: 1/13;
+      border: 2px solid #0b0b0b !important;
+      border-radius: 0 !important;
+    }
+    .ask-field:focus-within { box-shadow: 4px 4px 0 #e11d48; }
+
+    /* submit: Swiss black block */
+    .ask-submit {
+      background: #0b0b0b !important;
+      color: #fff !important;
+      border-radius: 0 !important;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    /* chat region: full width */
+    .chat { grid-column: 1/13; }
+
+    @media (max-width:900px) {
+      .presence, h1, .subhead, .ask-field, .chat { grid-column: 1/13; }
+      .subhead { margin-top: 8px; }
+    }
+  </style>
+</head>
+<body data-llm-design="composite">
+  <main style="display:grid;place-items:center;min-height:100dvh;padding:24px;width:100%">
+    <section class="poster" aria-label="Ask Oscar AI">
+
+      <div class="bar"></div>
+
+      <div class="presence">
+        <span class="presence-dot" aria-hidden="true">
+          <span class="presence-core"></span>
+          <span class="presence-ring"></span>
+        </span>
+        <span class="presence-label">Oscar Fanelli</span>
+      </div>
+
+      <h1>Curious about my work?</h1>
+
+      <p class="subhead">You're talking to a digitalized version of me, trained on what I've built. Ask about a project, my process, or how I work — it answers live.</p>
+
+      <form data-llm-form class="ask-field" autocomplete="off">
+        <label class="sr-only" for="queryInput">Ask something about Oscar</label>
+        <input id="queryInput" class="ask-input" name="q" type="text" maxlength="500" aria-describedby="askGhost" />
+        <span class="ask-ghost" id="askGhost" aria-hidden="true">
+          <span class="ghost-text"></span>
+          <span class="ask-caret"></span>
+        </span>
+        <button class="ask-submit" type="submit" aria-label="Ask">Ask</button>
+      </form>
+
+    </section>
+  </main>
+
+  <div class="dock" aria-label="Page actions">
+    <button class="dock-btn shuffle-btn" data-llm-shuffle type="button" aria-label="Shuffle to another style">
+      <span class="shuffle-cards" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="dock-btn-text">Shuffle style</span>
+    </button>
+    <button class="dock-btn behind-trigger" data-llm-behind type="button">
+      <span class="behind-q" aria-hidden="true">?</span>
+      <span class="dock-btn-text">What's behind this?</span>
+    </button>
+  </div>
+
+  <script src="../llm-hook.js"></script>
+</body>
+</html>

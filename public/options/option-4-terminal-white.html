@@ -6,166 +6,134 @@
   <title>Option 4 — Terminal Dossier (White)</title>
   <style>
     :root {
+      --card-bg: #ffffff;
       --bg: #f6f7fb;
-      --panel: #ffffff;
       --text: #0f172a;
       --muted: #64748b;
-      --line: #dbe2ea;
+      --line-c: #dbe2ea;
       --accent: #2563eb;
     }
 
     * { box-sizing: border-box; }
 
     body {
-      margin: 0;
-      min-height: 100vh;
+      margin: 0; min-height: 100vh;
       background:
-        radial-gradient(circle at 18% 14%, rgba(37, 99, 235, 0.08) 0%, transparent 32%),
-        radial-gradient(circle at 88% 82%, rgba(14, 165, 233, 0.08) 0%, transparent 30%),
+        radial-gradient(circle at 18% 14%, rgba(37,99,235,.08) 0%, transparent 32%),
+        radial-gradient(circle at 88% 82%, rgba(14,165,233,.08) 0%, transparent 30%),
         var(--bg);
       color: var(--text);
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      display: grid;
-      place-items: center;
-      padding: 20px;
+      display: grid; place-items: center; padding: 20px;
     }
 
     .window {
-      width: min(940px, 100%);
-      border: 1px solid var(--line);
-      background: var(--panel);
+      width: min(940px,100%);
+      border: 1px solid var(--line-c);
+      background: #ffffff;
       border-radius: 14px;
-      box-shadow: 0 26px 60px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 26px 60px rgba(15,23,42,.08);
       overflow: hidden;
     }
 
     .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       padding: 11px 14px;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid var(--line-c);
       background: #fcfdff;
     }
-
-    .lights {
-      display: flex;
-      gap: 6px;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #cbd5e1;
-    }
-
-    .title {
-      color: var(--muted);
-      font-size: 0.74rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
+    .lights { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; }
+    .title { color: var(--muted); font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; }
 
     .body { padding: 24px; }
 
-    .line {
-      color: var(--muted);
-      margin-bottom: 8px;
-      font-size: 0.9rem;
-    }
-
     h1 {
-      margin: 8px 0 16px;
-      font-size: clamp(1.35rem, 3.4vw, 2.2rem);
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      max-width: 34ch;
+      margin: 0 0 12px;
+      font-size: clamp(1.35rem,3.4vw,2.2rem); font-weight: 600;
+      letter-spacing: -.01em;
     }
-
-    .prompt {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 10px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 8px 10px;
-      background: #fff;
-    }
-
-    .tag {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    input {
-      border: 0;
-      outline: 0;
-      background: transparent;
-      color: var(--text);
-      font: inherit;
-      font-size: 0.96rem;
-      padding: 6px 0;
-    }
-
-    input::placeholder { color: #94a3b8; }
-
-    button {
-      border: 1px solid #bfdbfe;
-      background: #eff6ff;
-      color: #1d4ed8;
-      font: inherit;
-      font-size: 0.9rem;
-      font-weight: 600;
-      padding: 8px 12px;
-      border-radius: 8px;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.2s ease;
-    }
-
-    button.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    button.show:hover {
-      background: #dbeafe;
-    }
-
-    .blink::after {
-      content: '_';
-      margin-left: 3px;
-      color: #2563eb;
-      animation: blink 1s steps(1) infinite;
-    }
-
+    /* blinking cursor */
+    h1::after { content: '_'; margin-left: 3px; color: #2563eb; animation: blink 1s steps(1) infinite; }
     @keyframes blink { 50% { opacity: 0; } }
-  
-.style-shuffle{position:fixed;top:14px;right:14px;z-index:9999;font-size:.72rem;line-height:1;text-decoration:none;padding:6px 9px;border:1px solid currentColor;border-radius:999px;color:inherit;background:rgba(255,255,255,.08);opacity:.75;backdrop-filter:blur(2px)}
-.style-shuffle:hover{opacity:1}
-</style>
+
+    /* presence: blue accent label */
+    .presence-label { color: var(--muted); }
+    .presence-core { background: var(--accent) !important; }
+    .presence-ring { border-color: var(--accent) !important; }
+
+    /* ask field: white card with blue accent border on focus */
+    .ask-field {
+      background: #fff;
+      border-color: var(--line-c) !important;
+      border-radius: 10px !important;
+    }
+    .ask-field:focus-within { border-color: var(--accent) !important; }
+
+    /* terminal prefix */
+    .term-prefix {
+      color: var(--accent); font-weight: 600; font-size: 14px; flex: none;
+      padding-right: 8px; border-right: 1px solid var(--line-c); margin-right: 4px;
+    }
+    .ask-ghost { left: 86px !important; }
+
+    /* submit: blue accent */
+    .ask-submit {
+      background: #eff6ff !important;
+      color: #1d4ed8 !important;
+      border: 1px solid #bfdbfe !important;
+      border-radius: 8px !important;
+      font-family: inherit;
+    }
+    .ask-submit:hover { background: #dbeafe !important; }
+  </style>
 </head>
-<body>
-  <section class="window">
-    <div class="top">
-      <div class="lights"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-      <div class="title">I’m Oscar Fanelli</div>
-    </div>
-    <div class="body">
-      <div class="line">profile://interactive-query</div>
-      <h1 class="blink">What do you want to know about me?</h1>
-      <form data-llm-form class="prompt" id="f4">
-        <span class="tag">query$</span>
-        <input id="q4" placeholder="type your question..." />
-        <button id="b4" type="submit">run</button>
-      </form>
-    </div>
-  </section>
+<body data-llm-design="composite">
+  <main style="display:grid;place-items:center;min-height:100dvh;padding:20px;width:100%">
+    <section class="window" aria-label="Ask Oscar AI">
+      <div class="top">
+        <div class="lights"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="title">profile://interactive-query</div>
+      </div>
+      <div class="body">
 
-  <a class="style-shuffle" href="../index.html" target="_top" aria-label="Shuffle style">shuffle style</a>
+        <div class="presence">
+          <span class="presence-dot" aria-hidden="true">
+            <span class="presence-core"></span>
+            <span class="presence-ring"></span>
+          </span>
+          <span class="presence-label">oscar@portfolio</span>
+        </div>
 
-<script src="../llm-hook.js"></script>
+        <h1>Curious about my work?</h1>
+        <p class="subhead">You're talking to a digitalized version of me, trained on what I've built. Ask about a project, my process, or how I work — it answers live.</p>
+
+        <form data-llm-form class="ask-field" autocomplete="off">
+          <label class="sr-only" for="queryInput">Ask something about Oscar</label>
+          <span class="term-prefix" aria-hidden="true">query$</span>
+          <input id="queryInput" class="ask-input" name="q" type="text" maxlength="500" aria-describedby="askGhost" />
+          <span class="ask-ghost" id="askGhost" aria-hidden="true">
+            <span class="ghost-text"></span>
+            <span class="ask-caret"></span>
+          </span>
+          <button class="ask-submit" type="submit" aria-label="Ask">run</button>
+        </form>
+
+      </div>
+    </section>
+  </main>
+
+  <div class="dock" aria-label="Page actions">
+    <button class="dock-btn shuffle-btn" data-llm-shuffle type="button" aria-label="Shuffle to another style">
+      <span class="shuffle-cards" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="dock-btn-text">Shuffle style</span>
+    </button>
+    <button class="dock-btn behind-trigger" data-llm-behind type="button">
+      <span class="behind-q" aria-hidden="true">?</span>
+      <span class="dock-btn-text">What's behind this?</span>
+    </button>
+  </div>
+
+  <script src="../llm-hook.js"></script>
 </body>
 </html>

@@ -1,7 +1,115 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Option 41 — Afrofuturism</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(160deg,#160d2f,#2f1467 55%,#0f0a20);color:#f8f4ff;font-family:Inter,sans-serif;padding:24px}.card{width:min(760px,100%);background:rgba(20,12,40,.78);border:1px solid #9b7dff;padding:28px;box-shadow:0 0 30px rgba(155,125,255,.25)}.k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#c5b6ff}h1{font-size:clamp(2rem,5vw,3.2rem);margin:10px 0}.sub{color:#cbbdf4}.f{display:grid;grid-template-columns:1fr auto;gap:8px;border:1px solid #7ed0ff;padding:8px;margin-top:16px}input{border:0;outline:0;background:transparent;color:#f8f4ff;padding:10px}input::placeholder{color:#a9a0d3}button{border:0;background:#7ed0ff;color:#1a1038;padding:0 14px;opacity:0;pointer-events:none}button.show{opacity:1;pointer-events:auto}
-.style-shuffle{position:fixed;top:14px;right:14px;z-index:9999;font-size:.72rem;line-height:1;text-decoration:none;padding:6px 9px;border:1px solid currentColor;border-radius:999px;color:inherit;background:rgba(255,255,255,.08);opacity:.75;backdrop-filter:blur(2px)}
-.style-shuffle:hover{opacity:1}
-</style></head><body><main class='card'><div class='k'>I’m Oscar Fanelli</div><h1>What do you want to know about me?</h1><p class='sub'>Cosmic palettes, strong identity, direct query.</p><form data-llm-form id='f' class='f'><input id='q' placeholder='Ask into the future'><button id='b'>Ask</button></form></main><a class="style-shuffle" href="../index.html" target="_top" aria-label="Shuffle style">shuffle style</a>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Option 41 — Afrofuturism</title>
+  <style>
+    :root { --card-bg: #140c28; }
 
-<script src="../llm-hook.js"></script>
-</body></html>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0; min-height: 100vh;
+      display: grid; place-items: center;
+      background: linear-gradient(160deg, #160d2f, #2f1467 55%, #0f0a20);
+      color: #f8f4ff; font-family: Inter, sans-serif; padding: 24px;
+    }
+
+    .card {
+      width: min(760px,100%);
+      background: rgba(20,12,40,.78);
+      border: 1px solid #9b7dff;
+      padding: 28px;
+      box-shadow: 0 0 30px rgba(155,125,255,.25);
+    }
+
+    h1 {
+      font-size: clamp(2rem,5vw,3.2rem);
+      margin: 0 0 12px; line-height: 1;
+      letter-spacing: -.01em;
+    }
+
+    /* presence: cosmic purple label */
+    .presence-label { color: #c5b6ff; letter-spacing: .16em; }
+    .presence-core { background: #9b7dff !important; }
+    .presence-ring { border-color: #9b7dff !important; }
+
+    /* ask field: cosmic glow */
+    .ask-field {
+      border-color: #7ed0ff !important;
+      border-radius: 8px !important;
+      background: rgba(16,10,36,.6);
+    }
+    .ask-field:focus-within {
+      border-color: #9b7dff !important;
+      box-shadow: 0 0 16px rgba(155,125,255,.3);
+    }
+    .ask-input::placeholder { color: #a9a0d3; }
+
+    /* submit: cyan cosmic */
+    .ask-submit {
+      background: #7ed0ff !important;
+      color: #1a1038 !important;
+      border-radius: 8px !important;
+      font-weight: 600;
+    }
+    .ask-submit:hover { background: #9ddcff !important; }
+
+    /* ◈ cosmic prefix glyph inside the field */
+    .cosmos-prefix {
+      color: #9b7dff; font-size: 15px; flex: none;
+      padding-right: 10px; border-right: 1px solid rgba(155,125,255,.3); margin-right: 4px;
+    }
+    .ask-ghost { left: 52px !important; }
+
+    /* dock: deep space */
+    .dock-btn {
+      background: rgba(20,12,40,.88) !important;
+      border-color: #9b7dff !important;
+    }
+  </style>
+</head>
+<body data-llm-design="composite">
+  <main style="display:grid;place-items:center;min-height:100dvh;padding:24px;width:100%">
+    <section class="card" aria-label="Ask Oscar AI">
+
+      <div class="presence">
+        <span class="presence-dot" aria-hidden="true">
+          <span class="presence-core"></span>
+          <span class="presence-ring"></span>
+        </span>
+        <span class="presence-label">Signal: Oscar Fanelli</span>
+      </div>
+
+      <h1>Curious about my work?</h1>
+      <p class="subhead">You're talking to a digitalized version of me, trained on what I've built. Ask about a project, my process, or how I work — it answers live.</p>
+
+      <form data-llm-form class="ask-field" autocomplete="off">
+        <label class="sr-only" for="queryInput">Ask something about Oscar</label>
+        <span class="cosmos-prefix" aria-hidden="true">◈</span>
+        <input id="queryInput" class="ask-input" name="q" type="text" maxlength="500" aria-describedby="askGhost" />
+        <span class="ask-ghost" id="askGhost" aria-hidden="true">
+          <span class="ghost-text"></span>
+          <span class="ask-caret"></span>
+        </span>
+        <button class="ask-submit" type="submit" aria-label="Ask">transmit</button>
+      </form>
+
+    </section>
+  </main>
+
+  <div class="dock" aria-label="Page actions">
+    <button class="dock-btn shuffle-btn" data-llm-shuffle type="button" aria-label="Shuffle to another style">
+      <span class="shuffle-cards" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="dock-btn-text">Shuffle style</span>
+    </button>
+    <button class="dock-btn behind-trigger" data-llm-behind type="button">
+      <span class="behind-q" aria-hidden="true">?</span>
+      <span class="dock-btn-text">What's behind this?</span>
+    </button>
+  </div>
+
+  <script src="../llm-hook.js"></script>
+</body>
+</html>

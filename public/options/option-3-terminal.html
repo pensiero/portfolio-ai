@@ -5,42 +5,125 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Option 3 — Terminal Dossier</title>
   <style>
-    :root { --bg:#060606; --panel:#0c0c0c; --text:#b8ffcb; --muted:#67bd83; --line:#1f3d28; }
-    * { box-sizing:border-box; }
-    body { margin:0; min-height:100vh; background:var(--bg); color:var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; display:grid; place-items:center; padding:18px; }
-    .window { width:min(920px,100%); border:1px solid var(--line); background:var(--panel); box-shadow:0 0 0 1px #0a1a10 inset, 0 20px 60px rgba(0,0,0,.55); }
-    .top { display:flex; gap:6px; padding:10px 12px; border-bottom:1px solid var(--line); }
-    .dot { width:10px; height:10px; border-radius:50%; background:#1f3d28; }
-    .body { padding:20px; }
-    .line { color:var(--muted); margin-bottom:8px; }
-    h1 { margin:8px 0 16px; font-size:clamp(1.4rem,3.4vw,2.1rem); font-weight:600; }
-    .prompt { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px; border:1px solid var(--line); padding:8px 10px; }
-    .tag { color:var(--muted); }
-    input { border:0; outline:0; background:transparent; color:var(--text); font:inherit; }
-    button { border:1px solid var(--line); background:#0d1911; color:var(--text); font:inherit; padding:8px 12px; opacity:0; pointer-events:none; transition:opacity .2s ease; }
-    button.show { opacity:1; pointer-events:auto; }
-    .blink::after { content:'_'; animation:blink 1s steps(1) infinite; }
-    @keyframes blink { 50% { opacity:0; } }
-  
-.style-shuffle{position:fixed;top:14px;right:14px;z-index:9999;font-size:.72rem;line-height:1;text-decoration:none;padding:6px 9px;border:1px solid currentColor;border-radius:999px;color:inherit;background:rgba(255,255,255,.08);opacity:.75;backdrop-filter:blur(2px)}
-.style-shuffle:hover{opacity:1}
-</style>
-</head>
-<body>
-  <section class="window">
-    <div class="top"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-    <div class="body">
-      <div class="line">identity: Oscar Fanelli</div>
-      <h1 class="blink">What do you want to know about me?</h1>
-      <form data-llm-form class="prompt" id="f3">
-        <span class="tag">query$</span>
-        <input id="q3" placeholder="type question..." />
-        <button id="b3" type="submit">run</button>
-      </form>
-    </div>
-  </section>
-  <a class="style-shuffle" href="../index.html" target="_top" aria-label="Shuffle style">shuffle style</a>
+    :root { --card-bg: #0c0c0c; }
+    * { box-sizing: border-box; }
 
-<script src="../llm-hook.js"></script>
+    body {
+      margin: 0; min-height: 100vh;
+      background: #060606; color: #b8ffcb;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      display: grid; place-items: center; padding: 18px;
+    }
+
+    .window {
+      width: min(920px,100%);
+      border: 1px solid #1f3d28;
+      background: #0c0c0c;
+      box-shadow: 0 0 0 1px #0a1a10 inset, 0 20px 60px rgba(0,0,0,.55);
+    }
+
+    .top {
+      display: flex; gap: 6px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #1f3d28;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #1f3d28; }
+    .body { padding: 20px; }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(1.4rem,3.4vw,2.1rem); font-weight: 600;
+    }
+    /* blinking cursor after the headline */
+    h1::after { content: '_'; animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* presence: green muted label */
+    .presence-label { color: #67bd83; }
+
+    /* ask field: terminal prompt style */
+    .ask-field {
+      border-color: #1f3d28 !important;
+      border-radius: 0 !important;
+      background: transparent;
+      padding-left: 14px !important;
+    }
+    .ask-field:focus-within { border-color: #b8ffcb !important; }
+
+    /* terminal prefix glyph inside the field */
+    .term-prefix {
+      color: #67bd83; font-size: 14px; flex: none;
+      padding-right: 8px;
+      border-right: 1px solid #1f3d28;
+      margin-right: 4px;
+    }
+
+    /* push ghost text past the prefix */
+    .ask-ghost { left: 80px !important; }
+
+    /* submit button: terminal-style bordered */
+    .ask-submit {
+      border-radius: 0 !important;
+      border-left: 1px solid #1f3d28 !important;
+      background: #0d1911 !important;
+      color: #b8ffcb !important;
+      font-family: inherit;
+      letter-spacing: .04em;
+    }
+    .ask-submit:hover { background: #1f3d28 !important; }
+
+    /* dock: dark terminal glass */
+    .dock-btn {
+      background: #0c0c0c !important;
+      border-color: #1f3d28 !important;
+    }
+  </style>
+</head>
+<body data-llm-design="composite">
+  <main style="display:grid;place-items:center;min-height:100dvh;padding:18px;width:100%">
+    <section class="window" aria-label="Ask Oscar AI">
+      <div class="top">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <div class="body">
+
+        <div class="presence">
+          <span class="presence-dot" aria-hidden="true">
+            <span class="presence-core"></span>
+            <span class="presence-ring"></span>
+          </span>
+          <span class="presence-label">oscar@portfolio</span>
+        </div>
+
+        <h1>Curious about my work?</h1>
+        <p class="subhead">You're talking to a digitalized version of me, trained on what I've built. Ask about a project, my process, or how I work — it answers live.</p>
+
+        <form data-llm-form class="ask-field" autocomplete="off">
+          <label class="sr-only" for="queryInput">Ask something about Oscar</label>
+          <span class="term-prefix" aria-hidden="true">query$</span>
+          <input id="queryInput" class="ask-input" name="q" type="text" maxlength="500" aria-describedby="askGhost" />
+          <span class="ask-ghost" id="askGhost" aria-hidden="true">
+            <span class="ghost-text"></span>
+            <span class="ask-caret"></span>
+          </span>
+          <button class="ask-submit" type="submit" aria-label="Ask">run</button>
+        </form>
+
+      </div>
+    </section>
+  </main>
+
+  <div class="dock" aria-label="Page actions">
+    <button class="dock-btn shuffle-btn" data-llm-shuffle type="button" aria-label="Shuffle to another style">
+      <span class="shuffle-cards" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="dock-btn-text">Shuffle style</span>
+    </button>
+    <button class="dock-btn behind-trigger" data-llm-behind type="button">
+      <span class="behind-q" aria-hidden="true">?</span>
+      <span class="dock-btn-text">What's behind this?</span>
+    </button>
+  </div>
+
+  <script src="../llm-hook.js"></script>
 </body>
 </html>

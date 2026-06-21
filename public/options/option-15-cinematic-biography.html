@@ -1,7 +1,118 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Option 15 — Movie Poster Cut</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@500;700&display=swap" rel="stylesheet"><style>body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 12%,rgba(255,193,92,.22),transparent 34%),linear-gradient(180deg,#0b0c12,#171822 50%,#08090d);color:#f9f2e8;font-family:Inter,sans-serif;display:grid;place-items:center;padding:24px}.hero{width:min(940px,100%);padding:42px;border-radius:10px;background:linear-gradient(180deg,rgba(16,18,28,.86),rgba(9,10,14,.9));border:1px solid rgba(255,222,163,.28);box-shadow:0 30px 90px rgba(0,0,0,.6), inset 0 0 40px rgba(255,193,92,.08);position:relative}.hero:before{content:"";position:absolute;inset:10px;border:1px solid rgba(255,222,163,.18);pointer-events:none}.k{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:#f3c683}.title{font-family:Syne,sans-serif;font-size:clamp(2.1rem,6vw,4.8rem);line-height:.93;margin:12px 0;text-transform:uppercase;letter-spacing:.02em}.sub{color:#e8d6bd;max-width:56ch}.form{margin-top:24px;display:grid;grid-template-columns:1fr auto;gap:10px;border:1px solid rgba(255,222,163,.3);border-radius:8px;padding:8px;background:rgba(15,14,18,.7)}input{border:0;outline:0;background:transparent;color:#f9f2e8;padding:12px;font-size:1rem}input::placeholder{color:#c5ab84}button{border:0;background:#f3c683;color:#241b10;border-radius:8px;padding:0 15px;font-weight:700;opacity:0;pointer-events:none}button.show{opacity:1;pointer-events:auto}
-.style-shuffle{position:fixed;top:14px;right:14px;z-index:9999;font-size:.72rem;line-height:1;text-decoration:none;padding:6px 9px;border:1px solid currentColor;border-radius:999px;color:inherit;background:rgba(255,255,255,.08);opacity:.75;backdrop-filter:blur(2px)}
-.style-shuffle:hover{opacity:1}
-</style></head><body><section class="hero"><div class="k">Featuring Oscar Fanelli</div><h1 class="title">What do you want to know about me?</h1><p class="sub">A movie-poster inspired interface: dramatic mood, one central prompt, and your question as the opening scene.</p><form data-llm-form id="f" class="form"><input id="q" placeholder="Ask to reveal the next scene."><button id="b">Reveal</button></form></section><a class="style-shuffle" href="../index.html" target="_top" aria-label="Shuffle style">shuffle style</a>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Option 15 — Movie Poster Cut</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --card-bg: #10121c; }
 
-<script src="../llm-hook.js"></script>
-</body></html>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0; min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% 12%, rgba(255,193,92,.22), transparent 34%),
+        linear-gradient(180deg, #0b0c12, #171822 50%, #08090d);
+      color: #f9f2e8;
+      font-family: Inter, sans-serif;
+      display: grid; place-items: center; padding: 24px;
+    }
+
+    .hero {
+      width: min(940px,100%);
+      padding: 42px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(16,18,28,.86), rgba(9,10,14,.9));
+      border: 1px solid rgba(255,222,163,.28);
+      box-shadow: 0 30px 90px rgba(0,0,0,.6), inset 0 0 40px rgba(255,193,92,.08);
+      position: relative;
+    }
+    .hero::before {
+      content: "";
+      position: absolute; inset: 10px;
+      border: 1px solid rgba(255,222,163,.18);
+      pointer-events: none;
+    }
+
+    h1 {
+      font-family: Syne, sans-serif;
+      font-size: clamp(2.1rem,6vw,4.8rem);
+      line-height: .93; margin: 0 0 12px;
+      text-transform: uppercase; letter-spacing: .02em;
+    }
+
+    /* presence: gold film credit label */
+    .presence-label { color: #f3c683; letter-spacing: .2em; }
+    .presence-core { background: #f3c683 !important; }
+    .presence-ring { border-color: #f3c683 !important; }
+
+    /* ask field: cinematic dark glass */
+    .ask-field {
+      border-color: rgba(255,222,163,.3) !important;
+      border-radius: 8px !important;
+      background: rgba(15,14,18,.7);
+    }
+    .ask-field:focus-within { border-color: rgba(243,198,131,.6) !important; }
+
+    /* submit: gold button */
+    .ask-submit {
+      background: #f3c683 !important;
+      color: #241b10 !important;
+      border-radius: 8px !important;
+      font-weight: 700;
+    }
+    .ask-submit:hover { background: #e8b570 !important; }
+
+    /* dock: dark cinematic */
+    .dock-btn {
+      background: rgba(16,18,28,.88) !important;
+      border-color: rgba(255,222,163,.3) !important;
+    }
+  </style>
+</head>
+<body data-llm-design="composite">
+  <main style="display:grid;place-items:center;min-height:100dvh;padding:24px;width:100%">
+    <section class="hero" aria-label="Ask Oscar AI">
+
+      <div class="presence">
+        <span class="presence-dot" aria-hidden="true">
+          <span class="presence-core"></span>
+          <span class="presence-ring"></span>
+        </span>
+        <span class="presence-label">Featuring Oscar Fanelli</span>
+      </div>
+
+      <h1>Curious about my work?</h1>
+      <p class="subhead">You're talking to a digitalized version of me, trained on what I've built. Ask about a project, my process, or how I work — it answers live.</p>
+
+      <form data-llm-form class="ask-field" autocomplete="off">
+        <label class="sr-only" for="queryInput">Ask something about Oscar</label>
+        <input id="queryInput" class="ask-input" name="q" type="text" maxlength="500" aria-describedby="askGhost" />
+        <span class="ask-ghost" id="askGhost" aria-hidden="true">
+          <span class="ghost-text"></span>
+          <span class="ask-caret"></span>
+        </span>
+        <button class="ask-submit" type="submit" aria-label="Ask">Ask</button>
+      </form>
+
+    </section>
+  </main>
+
+  <div class="dock" aria-label="Page actions">
+    <button class="dock-btn shuffle-btn" data-llm-shuffle type="button" aria-label="Shuffle to another style">
+      <span class="shuffle-cards" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="dock-btn-text">Shuffle style</span>
+    </button>
+    <button class="dock-btn behind-trigger" data-llm-behind type="button">
+      <span class="behind-q" aria-hidden="true">?</span>
+      <span class="dock-btn-text">What's behind this?</span>
+    </button>
+  </div>
+
+  <script src="../llm-hook.js"></script>
+</body>
+</html>

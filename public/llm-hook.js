@@ -18,8 +18,8 @@
   const CHAT_KEY = 'portfolio-chat-v1';
   const MAX_CHARS = 500;
   const MAX_HISTORY = 12;
-  const EARTHQUAKE_DELAY_MS = 120000; // slow-answer "thinking too long" trigger (2 min)
-  const EARTHQUAKE_DURATION_MS = 2000; // the shake lasts exactly 2s, then shuffle
+  const EARTHQUAKE_DELAY_MS = 120000; // slow-answer auto-shuffle trigger (2 min)
+  const SHUFFLE_VEIL_KEY = 'portfolio-shuffle-veil';
 
   // Cycling status lines shown in the loading skeleton (composite design).
   const STATUSES = ['Reading my bio…', 'Connecting the dots…', 'Composing an answer…'];
@@ -50,21 +50,13 @@
   function injectStyles() {
     const s = document.createElement('style');
     s.textContent = `
-      @keyframes llm-earthquake {
-        0%,100%{transform:translate(0,0) rotate(0deg)}
-        10%{transform:translate(-5px,-3px) rotate(-.4deg)}
-        20%{transform:translate(5px,3px) rotate(.4deg)}
-        30%{transform:translate(-8px,2px) rotate(-.8deg)}
-        40%{transform:translate(8px,-2px) rotate(.8deg)}
-        50%{transform:translate(-4px,4px) rotate(-.4deg)}
-        60%{transform:translate(4px,-4px) rotate(.4deg)}
-        70%{transform:translate(-7px,3px) rotate(-.7deg)}
-        80%{transform:translate(7px,-3px) rotate(.7deg)}
-        90%{transform:translate(-3px,6px) rotate(-.3deg)}
+      .llm-shuffle-veil {
+        position:fixed;inset:0;z-index:9999;
+        background:#000;opacity:0;pointer-events:none;
+        transition:opacity 320ms cubic-bezier(0.4,0,1,1);
       }
-      body.llm-shaking {
-        animation: llm-earthquake 0.09s infinite;
-        transform-origin: center center;
+      .llm-shuffle-veil.llm-veil-visible {
+        opacity:1;pointer-events:all;
       }
       @keyframes llm-dot-pulse {
         0%,80%,100%{opacity:.2;transform:scale(.75)}
@@ -79,6 +71,153 @@
       .llm-dot:nth-child(2){animation-delay:.22s}
       .llm-dot:nth-child(3){animation-delay:.44s}
     `;
+
+    // Full composite-renderer CSS, injected for every page that opts in.
+    // Uses currentColor throughout so it adapts to any theme automatically.
+    // Each option only needs to define --card-bg (their card/panel bg colour).
+    if (document.body.dataset.llmDesign === 'composite') {
+      s.textContent += `
+        :root {
+          --line: color-mix(in srgb, currentColor 12%, transparent);
+          --line-soft: color-mix(in srgb, currentColor 8%, transparent);
+          --chip-line: color-mix(in srgb, currentColor 26%, transparent);
+          --bubble-bg: color-mix(in srgb, currentColor 8%, transparent);
+          --answer-bg: color-mix(in srgb, currentColor 4%, transparent);
+        }
+        /* presence dot */
+        .presence{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+        .presence-dot{position:relative;flex:none;width:10px;height:10px}
+        .presence-core,.presence-ring{position:absolute;inset:0;border-radius:50%}
+        .presence-core{background:currentColor;animation:breathe 3.2s ease-in-out infinite}
+        .presence-ring{border:1.5px solid currentColor;animation:ring 3.2s ease-out infinite}
+        .presence-label{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;opacity:.6}
+        /* subhead */
+        .subhead{font-size:1rem;line-height:1.5;opacity:.72;margin:0 0 24px}
+        /* ask field */
+        .ask-field{position:relative;display:flex;align-items:center;border:1.5px solid color-mix(in srgb,currentColor 50%,transparent);border-radius:11px;padding:0 8px 0 18px;height:60px;transition:border-color 160ms ease}
+        .ask-field:focus-within{border-color:currentColor}
+        .ask-input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:17px;color:inherit}
+        .ask-ghost{position:absolute;left:18px;right:96px;display:flex;align-items:center;pointer-events:none;font-size:17px;opacity:.55;white-space:nowrap;overflow:hidden}
+        .ask-ghost .ghost-text{overflow:hidden;text-overflow:ellipsis;transition:opacity 200ms ease}
+        .ask-caret{flex:none;display:inline-block;width:2px;height:22px;margin-left:2px;background:currentColor;animation:caretBlink 1.05s step-end infinite}
+        .ask-field.is-active .ask-ghost{display:none}
+        .ask-submit{flex:none;display:none;font:inherit;font-weight:600;font-size:15px;color:var(--card-bg,#fff);background:currentColor;border:none;border-radius:8px;height:44px;padding:0 24px;cursor:pointer;transition:opacity 160ms ease}
+        .ask-submit:disabled{opacity:.5;cursor:default}
+        .ask-field.has-text .ask-submit{display:block}
+        .sr-only{position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;clip:rect(0 0 0 0);overflow:hidden}
+        /* chat */
+        .chat{margin-top:4px}
+        .popular{display:flex;align-items:center;gap:10px;margin:22px 0 12px}
+        .popular-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;opacity:.55}
+        .popular-rule{flex:1;height:1px;background:var(--line)}
+        .chips{display:flex;flex-wrap:wrap;gap:10px}
+        .chip{font:inherit;font-size:15px;font-weight:600;color:inherit;background:transparent;border:1.5px solid var(--chip-line);border-radius:100px;padding:10px 17px;cursor:pointer;transition:background 140ms ease,transform 140ms ease}
+        .chip:hover{background:var(--bubble-bg)}
+        .chip:active{transform:scale(.97)}
+        .chip.chip-sm{font-size:13.5px;font-weight:500;padding:7px 13px}
+        /* turns */
+        .turn-you{display:flex;justify-content:flex-end;margin-top:18px;animation:rowGrow .4s ease both}
+        .turn-you .inner{max-width:82%}
+        .you-label,.answer-label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;opacity:.55;margin-bottom:6px}
+        .you-label{text-align:right}
+        .you-bubble{font-size:15.5px;line-height:1.5;color:inherit;background:var(--bubble-bg);border-radius:14px 14px 4px 14px;padding:10px 15px;white-space:pre-wrap}
+        /* answer */
+        .answer{position:relative;margin-top:16px;padding:18px 20px;border-radius:12px;background:var(--answer-bg);animation:ansIn .5s ease both}
+        .answer.is-plain{background:transparent;padding:14px 18px}
+        .answer-rule{position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:3px;background:currentColor;opacity:.55}
+        .answer.is-latest .answer-rule{opacity:1}
+        .answer-shimmer{position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:3px;background:currentColor;transform-origin:top;animation:shimmerLine 1.6s ease-out forwards;pointer-events:none}
+        .answer-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+        .answer-head .answer-label{margin-bottom:0}
+        .answer-flag{font-size:10.5px;font-weight:600;color:inherit;border:1px solid color-mix(in srgb,currentColor 30%,transparent);border-radius:100px;padding:2px 8px}
+        .answer-body{font-size:16px;line-height:1.6;color:inherit;white-space:pre-wrap}
+        .answer.is-plain .answer-body{font-size:15px;line-height:1.55}
+        .answer-source{margin-top:10px;font-size:12.5px;opacity:.55}
+        .answer-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+        .answer-chips-loading{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12.5px;opacity:.55}
+        /* thinking skeleton */
+        .thinking-head{display:flex;align-items:center;gap:10px;margin-bottom:15px}
+        .dotwave{display:flex;gap:3px}
+        .dotwave span{width:5px;height:5px;border-radius:50%;background:currentColor;animation:dotwave 1.1s ease-in-out infinite}
+        .dotwave span:nth-child(2){animation-delay:.18s}
+        .dotwave span:nth-child(3){animation-delay:.36s}
+        .status-text{font-size:13px;opacity:.6}
+        .skeleton-line{height:12px;border-radius:6px;margin-bottom:9px;background:linear-gradient(90deg,color-mix(in srgb,currentColor 6%,transparent) 25%,color-mix(in srgb,currentColor 16%,transparent) 50%,color-mix(in srgb,currentColor 6%,transparent) 75%);background-size:200% 100%;animation:skeleton 1.4s linear infinite}
+        .skeleton-line:last-child{margin-bottom:0}
+        .skeleton-line:nth-child(2){animation-delay:.2s}
+        .skeleton-line:nth-child(3){animation-delay:.4s}
+        /* earlier / conversation */
+        .earlier-bar,.convo-header{display:flex;align-items:center;gap:8px;margin-top:18px;font-size:12px;letter-spacing:.04em;opacity:.7}
+        .earlier-bar{cursor:pointer}
+        .earlier-bar:hover{opacity:1}
+        .disclosure-caret{opacity:.7}
+        .earlier-bar .count,.convo-title{font-weight:600;text-transform:uppercase;letter-spacing:.14em;font-size:10.5px}
+        .convo-rule{flex:1;height:1px;background:var(--line)}
+        .convo-actions{display:flex;align-items:center;gap:10px;margin-top:16px}
+        .convo-actions .earlier-bar,.convo-actions .clear-btn{margin-top:0}
+        /* footer */
+        .footer{margin-top:22px;padding-top:16px;border-top:1px solid var(--line-soft);font-size:13.5px;opacity:.92}
+        .footer a{color:inherit}
+        .footer-contact{opacity:.85}
+        /* clear btn */
+        .clear-btn{font:inherit;font-size:13px;color:inherit;background:transparent;border:0;padding:0;margin-left:auto;cursor:pointer;opacity:.55;text-decoration:underline;text-underline-offset:2px}
+        .clear-btn:hover{opacity:.85}
+        /* dock */
+        .dock{position:fixed;right:clamp(14px,2.5vw,26px);bottom:clamp(14px,2.5vw,26px);z-index:40;display:flex;align-items:center;gap:10px}
+        .dock-btn{display:inline-flex;align-items:center;gap:9px;font:inherit;font-size:13px;font-weight:500;color:inherit;background:var(--card-bg,rgba(255,255,255,.92));border:1px solid color-mix(in srgb,currentColor 16%,transparent);border-radius:100px;padding:9px 16px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.1);opacity:.94;transition:opacity 160ms ease,transform 160ms ease,box-shadow 160ms ease;backdrop-filter:blur(8px)}
+        .dock-btn:hover{opacity:1;box-shadow:0 6px 22px rgba(0,0,0,.14)}
+        .dock-btn:active{transform:scale(.97)}
+        .dock-btn-text{white-space:nowrap}
+        .shuffle-btn.is-shuffling{opacity:1;cursor:default}
+        .shuffle-btn .shuffle-beat-text{white-space:nowrap}
+        .shuffle-cards{position:relative;display:inline-block;width:15px;height:12px;flex:none}
+        .shuffle-cards i{position:absolute;width:9px;height:11px;border:1.5px solid currentColor;border-radius:2.5px;background:var(--card-bg,rgba(255,255,255,.92));animation:deal 2.4s ease-in-out infinite}
+        .shuffle-cards i:nth-child(1){left:0;top:1px}
+        .shuffle-cards i:nth-child(2){left:3px;top:.5px;animation-delay:.3s}
+        .shuffle-cards i:nth-child(3){left:6px;top:0;animation-delay:.6s}
+        .behind-trigger.is-open{opacity:1;border-color:color-mix(in srgb,currentColor 38%,transparent)}
+        .behind-trigger .behind-q{display:inline-grid;place-items:center;flex:none;width:17px;height:17px;border-radius:50%;border:1.5px solid currentColor;font-size:10.5px;font-weight:700;line-height:1}
+        /* behind overlay */
+        .behind-overlay{position:fixed;inset:0;z-index:60}
+        .behind-scrim{position:absolute;inset:0;background:rgba(0,0,0,.32);backdrop-filter:blur(2px);animation:scrimIn .25s ease both}
+        .behind-panel{position:absolute;right:clamp(14px,2.5vw,26px);bottom:clamp(64px,9vh,84px);width:min(420px,calc(100vw - 28px));max-height:min(76vh,640px);overflow-y:auto;background:var(--card-bg,#fff);color:inherit;border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.24);padding:22px 24px 24px;transform-origin:bottom right;animation:behindIn .32s cubic-bezier(.22,1,.36,1) both}
+        .behind-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+        .behind-eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;opacity:.55}
+        .behind-close{flex:none;display:grid;place-items:center;width:28px;height:28px;margin:-4px -6px -4px 0;font-size:19px;line-height:1;color:inherit;background:transparent;border:0;border-radius:50%;cursor:pointer;opacity:.55;transition:opacity 140ms ease,background 140ms ease}
+        .behind-close:hover{opacity:.95;background:var(--bubble-bg)}
+        .behind-lead{font-size:16px;line-height:1.55;margin:0 0 18px}
+        .behind-points{display:flex;flex-direction:column;gap:15px;padding-top:18px;border-top:1px solid var(--line-soft)}
+        .behind-point{display:flex;gap:12px}
+        .behind-point-num{flex:none;font-size:11px;font-weight:700;letter-spacing:.04em;opacity:.4;padding-top:2px}
+        .behind-point-title{font-size:14px;font-weight:600;margin:0 0 2px}
+        .behind-point-body{font-size:13.5px;line-height:1.5;opacity:.8;margin:0}
+        .behind-source{margin-top:18px;padding-top:16px;border-top:1px solid var(--line-soft);font-size:13.5px;opacity:.85}
+        .behind-source a{color:inherit;text-underline-offset:2px}
+        /* keyframes */
+        @keyframes caretBlink{0%,45%{opacity:1}55%,100%{opacity:0}}
+        @keyframes breathe{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.32);opacity:.95}}
+        @keyframes ring{0%{transform:scale(.55);opacity:.55}100%{transform:scale(2.4);opacity:0}}
+        @keyframes ansIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+        @keyframes dotwave{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+        @keyframes shimmerLine{0%{transform:scaleY(0);opacity:.9}100%{transform:scaleY(1);opacity:0}}
+        @keyframes skeleton{0%{background-position:200% 0}100%{background-position:-200% 0}}
+        @keyframes deal{0%,100%{transform:translate(0,0) rotate(0)}30%{transform:translate(3px,-3px) rotate(9deg)}60%{transform:translate(-2px,1px) rotate(-5deg)}}
+        @keyframes rowGrow{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+        @keyframes scrimIn{from{opacity:0}to{opacity:1}}
+        @keyframes behindIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+        @media (prefers-reduced-motion:reduce){
+          .presence-core,.presence-ring,.ask-caret,.shuffle-cards i,
+          .dotwave span,.skeleton-line,.answer-shimmer,
+          .answer,.turn-you,.behind-panel,.behind-scrim{animation:none!important}
+        }
+        @media (max-width:460px){
+          .behind-panel{right:14px;left:14px;width:auto;bottom:76px}
+          .ask-submit{padding:0 16px}
+          .dock-btn{font-size:12px;padding:8px 13px}
+        }
+      `;
+    }
+
     document.head.append(s);
   }
 
@@ -164,13 +303,27 @@
     return wrap;
   }
 
-  // ---- earthquake + style shuffle via parent postMessage ----
-  function triggerEarthquake() {
-    document.body.classList.add('llm-shaking');
+  // ---- style shuffle via parent postMessage or smooth veil transition ----
+  function showShuffleVeil(onCovered) {
+    const veil = document.createElement('div');
+    veil.className = 'llm-shuffle-veil';
+    document.body.append(veil);
+    veil.getBoundingClientRect(); // force reflow before transition
+    veil.classList.add('llm-veil-visible');
+    setTimeout(onCovered, 360);
   }
-  function stopEarthquake() {
-    document.body.classList.remove('llm-shaking');
+
+  function playShuffleReveal() {
+    const veil = document.createElement('div');
+    veil.className = 'llm-shuffle-veil llm-veil-visible';
+    document.body.append(veil);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      veil.style.transition = 'opacity 480ms cubic-bezier(0.22,1,0.36,1)';
+      veil.classList.remove('llm-veil-visible');
+      setTimeout(() => veil.remove(), 520);
+    }));
   }
+
   function shuffleStyle() {
     if (window.parent && window.parent !== window) {
       try {
@@ -180,9 +333,16 @@
         /* fall through to standalone navigation */
       }
     }
-    // Standalone (page opened directly, no launcher iframe): hop to the
-    // launcher and ask it to roll a fresh style.
-    location.href = '../index.html?shuffle=1';
+    // Standalone: pick a random style from the manifest and veil-transition to it.
+    const options = manifest?.options || [];
+    const cur = currentFile();
+    const others = options.filter(o => o.file && o.file !== cur);
+    const pick = others.length ? others[Math.floor(Math.random() * others.length)] : null;
+    if (!pick) { location.href = '../index.html?shuffle=1'; return; }
+    showShuffleVeil(() => {
+      sessionStorage.setItem(SHUFFLE_VEIL_KEY, '1');
+      location.href = pick.file;
+    });
   }
 
   // The Cards button itself morphs into the "Redesigning myself…" beat (three
@@ -198,11 +358,10 @@
       '<span class="shuffle-beat-text">Redesigning myself…</span>';
   }
 
-  // Full shuffle transition: announce → shake for exactly 2s → swap style.
+  // Full shuffle transition: announce the swap, then navigate with a veil.
   function triggerShuffleSequence() {
     enterShuffleState();
-    triggerEarthquake();
-    setTimeout(shuffleStyle, EARTHQUAKE_DURATION_MS);
+    shuffleStyle();
   }
 
   // ---- dynamic follow-up suggestions ----
@@ -488,12 +647,12 @@
       answerEl.append(thinkingEl);
 
       let answer = '';
-      let earthquakeTriggered = false;
+      let autoShuffled = false;
 
       const earthquakeTimer = setTimeout(() => {
-        earthquakeTriggered = true;
-        triggerEarthquake();
-        setTimeout(stopEarthquake, EARTHQUAKE_DURATION_MS);
+        autoShuffled = true;
+        enterShuffleState();
+        shuffleStyle();
       }, EARTHQUAKE_DELAY_MS);
 
       try {
@@ -518,19 +677,14 @@
 
         clearTimeout(earthquakeTimer);
 
-        if (earthquakeTriggered) {
-          // Keep shaking; navigate to a new style after saving is done.
-          shuffleStyle();
-        } else {
-          stopEarthquake();
-          // Fetch AI-generated follow-up suggestions, fall back to static list.
-          const suggestions = await fetchSuggestions(q, answer);
-          currentChips = suggestions || manifest?.suggestedQuestions || null;
-          renderChips(ui.chips, input, submit, currentChips);
-        }
+        if (autoShuffled) return;
+
+        // Fetch AI-generated follow-up suggestions, fall back to static list.
+        const suggestions = await fetchSuggestions(q, answer);
+        currentChips = suggestions || manifest?.suggestedQuestions || null;
+        renderChips(ui.chips, input, submit, currentChips);
       } catch (err) {
         clearTimeout(earthquakeTimer);
-        stopEarthquake();
         if (answerEl.contains(thinkingEl)) answerEl.textContent = '';
         answerEl.textContent = `Sorry — I couldn't answer that. (${err.message})`;
         conversation.pop();
@@ -962,16 +1116,12 @@
         saveConversation();
       };
 
-      // "Thinking too long" → signature earthquake: shake for exactly 2s, then
-      // shuffle. If the answer lands during the shake it's saved in full first.
+      // "Thinking too long" → auto-shuffle to a fresh style.
       const eqTimer = setTimeout(() => {
         shuffled = true;
         enterShuffleState();
-        triggerEarthquake();
-        setTimeout(() => {
-          saveAssistant();
-          shuffleStyle();
-        }, EARTHQUAKE_DURATION_MS);
+        saveAssistant();
+        shuffleStyle();
       }, EARTHQUAKE_DELAY_MS);
 
       const swapToBody = () => {
@@ -1016,7 +1166,6 @@
       } catch (err) {
         clearTimeout(eqTimer);
         clearInterval(statusTimer);
-        stopEarthquake();
         conversation.pop(); // drop the unanswered question
         saveConversation();
         streaming = false;
@@ -1039,6 +1188,10 @@
 
   async function init() {
     injectStyles();
+    if (sessionStorage.getItem(SHUFFLE_VEIL_KEY) === '1') {
+      sessionStorage.removeItem(SHUFFLE_VEIL_KEY);
+      playShuffleReveal();
+    }
     try {
       const res = await fetch('manifest.json', { cache: 'no-cache' });
       manifest = await res.json();
