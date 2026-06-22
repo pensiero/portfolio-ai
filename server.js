@@ -13,6 +13,12 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 const PRIVATE_DOC_PATH =
   process.env.PRIVATE_DOC_PATH || path.join(__dirname, 'content', 'private-context.md');
 
+// Optional durable sink for visitor questions: a Google Apps Script web app that
+// appends each question as a row in a Google Sheet. When unset, queries are only
+// written to stdout (local dev, or before the secret is configured in prod).
+const SHEET_WEBHOOK_URL = process.env.LOGS_SHEET_WEBHOOK_URL;
+const SHEET_WEBHOOK_TOKEN = process.env.LOGS_SHEET_WEBHOOK_TOKEN;
+
 // Request shape limits (also a lightweight abuse guard).
 const MAX_MESSAGE_CHARS = 500;
 const MAX_HISTORY = 12;
@@ -96,16 +102,28 @@ For all of these, respond with one short sentence and nothing else: "I can only 
 3. the "[FOLLOWUPS]" block, last.`;
 
 function logQuery(question, answerChars) {
+  const event = {
+    ts: new Date().toISOString(),
+    question: String(question || '').slice(0, MAX_MESSAGE_CHARS),
+    answerChars,
+    model: modelName()
+  };
+
   // Emit to stdout as a JSON line — captured by the container runtime (no PVC,
-  // survives the read-only filesystem). This is the "what people ask" signal.
-  process.stdout.write(
-    JSON.stringify({
-      ts: new Date().toISOString(),
-      question: String(question || '').slice(0, MAX_MESSAGE_CHARS),
-      answerChars,
-      model: modelName()
-    }) + '\n'
-  );
+  // survives the read-only filesystem). This is the "what people ask" signal,
+  // and a backstop if the remote append below fails.
+  process.stdout.write(JSON.stringify(event) + '\n');
+
+  // Best-effort durable copy to the Google Sheet. Fire-and-forget: never block the
+  // response path, never throw — stdout already holds the record if this fails.
+  if (SHEET_WEBHOOK_URL) {
+    fetch(SHEET_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...event, token: SHEET_WEBHOOK_TOKEN }),
+      signal: AbortSignal.timeout(5000)
+    }).catch(() => {});
+  }
 }
 
 // Validate and normalize the conversation history sent by the client.
