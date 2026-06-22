@@ -322,7 +322,9 @@
 
   // ---- rotating placeholder ----
   function setupRotatingPlaceholders(input) {
-    const prompts = manifest?.suggestedQuestions || [];
+    // Rotating input text draws from its own list so it never echoes the
+    // four "popular questions" chips (falls back to those if absent).
+    const prompts = manifest?.inputPrompts || manifest?.suggestedQuestions || [];
     if (!input || !prompts.length) return;
     let i = 0;
     const apply = () => {
@@ -332,7 +334,7 @@
       i++;
     };
     apply();
-    setInterval(apply, 3600);
+    setInterval(apply, 5600);
   }
 
   // ---- animated thinking indicator ----
@@ -846,7 +848,7 @@
 
     // --- living input: rotating ghost + blinking caret while empty/unfocused
     const ghostText = form.querySelector('.ghost-text');
-    const prompts = manifest?.suggestedQuestions || [];
+    const prompts = manifest?.inputPrompts || manifest?.suggestedQuestions || [];
     let gi = 0;
     const tickGhost = () => {
       if (ghostText && prompts.length) ghostText.textContent = prompts[gi++ % prompts.length];
@@ -862,7 +864,7 @@
     refreshGhost();
     setInterval(() => {
       if (!form.classList.contains('is-active')) tickGhost();
-    }, 2600);
+    }, 4600);
     input.addEventListener('focus', refreshGhost);
     input.addEventListener('blur', refreshGhost);
     input.addEventListener('input', refreshGhost);

@@ -8,22 +8,30 @@
     "label": "What's behind this?",
     "repoUrl": "https://github.com/pensiero/portfolio-ai",
     "repoLabel": "See how it's built",
-    "lead": "You're not reading a CV. Every answer is generated live by a LLM, grounded in a private, evolving picture of how Oscar Fanelli thinks and works.",
+    "lead": "You're not reading a CV. Every answer is generated live by a LLM, grounded in a private, evolving picture of Oscar Fanelli.",
     "points": [
       { "title": "Live", "body": "Each reply is composed in the moment." },
-      { "title": "A model of me", "body": "The source is refined day by day — it evolves as I do. Here simplified and exposed with guardrails." },
-      { "title": "I rely on it myself", "body": "Beyond this page, I consult that same digital version of myself to pressure-test decisions, revisit my past reasoning, and move faster on real work." },
-      { "title": "It can get me wrong", "body": "It's an interpretation, so it can misread or oversimplify. For anything that really matters, please talk to the real Oscar. When it doesn't know, your question is recorded so I can answer it here in the future." }
+      { "title": "Evolving", "body": "The source is refined day by day, it evolves as I do. Here simplified and exposed with guardrails." },
+      { "title": "Beyond this page", "body": "I consult that same digital version of myself to pressure-test decisions, revisit my reasoning, and explore options." },
+      { "title": "It can get me wrong", "body": "It's an interpretation, so it can misread or oversimplify. For anything that really matters, please talk to the real Oscar. When it doesn't know, your question is recorded so I can improve the context." }
     ],
     "openSource": "Open source. See how it's built."
   },
   "suggestedQuestions": [
-    "What is Oscar doing at InPost?",
-    "What startups has Oscar founded?",
+    "Short version of Oscar's career",
+    "What does Oscar lead at InPost today?",
+    "How did he scale Uala from 3 to 20 and raise €5M?",
+    "What did Oscar learn at Meetup?",
+    "What is Oscar looking for next?",
+    "How is Oscar using AI?"
+  ],
+  "inputPrompts": [
     "What's Oscar's management style?",
-    "How is Oscar using AI?",
-    "Where has Oscar worked?",
-    "What is Oscar looking for next?"
+    "How is Oscar using AI at work?",
+    "Where has Oscar worked over the years?",
+    "Why is Oscar learning Japanese?",
+    "What does Oscar look for in a team?",
+    "Why did Oscar co-found a quantum-computing startup?"
   ],
   "options": [
     { "file": "option-1-original.html", "title": "Original Prototype", "caption": "Profile: Oscar Fanelli · Interface: Original Query Prototype" },
@@ -48,6 +56,8 @@
     { "file": "option-44-andean-textile.html", "title": "Andean Textile", "caption": "Weave Subject: Oscar Fanelli · Thread: Andean Inquiry" },
     { "file": "option-46-aboriginal-dots.html", "title": "Dot Painting Inspired", "caption": "Ground Subject: Oscar Fanelli · Rhythm: Dot Inquiry" },
     { "file": "option-47-brazilian-modernism.html", "title": "Brazilian Modernism", "caption": "Form Subject: Oscar Fanelli · School: Brazilian Modernism" },
-    { "file": "option-48-bauhaus-memphis-hybrid.html", "title": "Memphis Hybrid", "caption": "Frame Subject: Oscar Fanelli · Style: Memphis Hybrid Query" }
+    { "file": "option-49-brazilian-modernism-yellow.html", "title": "Brazilian Modernism (Yellow)", "caption": "Form Subject: Oscar Fanelli · School: Brazilian Modernism, Yellow Cut" },
+    { "file": "option-48-bauhaus-memphis-hybrid.html", "title": "Memphis Hybrid", "caption": "Frame Subject: Oscar Fanelli · Style: Memphis Hybrid Query" },
+    { "file": "option-50-manuscript.html", "title": "The Manuscript", "caption": "Transcript: Oscar Fanelli · Form: Manuscript Inquiry" }
   ]
 }
