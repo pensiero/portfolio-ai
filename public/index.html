@@ -43,7 +43,7 @@
     // The option list is manifest-driven — adding a style means dropping a file
     // in options/ and adding one manifest entry. No edits here.
     //
-    // First visit (no record) ALWAYS lands on option-1. A shuffle records the
+    // First visit (no record) ALWAYS lands on the default style. A shuffle records the
     // chosen style in localStorage, so a refresh stays on the shuffled style.
     //
     // A shuffle no longer hard-swaps the iframe src (which flashed). Instead we
@@ -51,7 +51,7 @@
     // old one once it has fully loaded, then drop the old — no white flash, no
     // visible reload. The conversation survives via sessionStorage as before.
     const ACTIVE_KEY = 'portfolio-active-style';
-    const DEFAULT_STYLE = 'option-1-original.html';
+    const DEFAULT_STYLE = 'option-49-brazilian-modernism-yellow.html';
     const FADE_MS = 600;
 
     let currentStage = null;
