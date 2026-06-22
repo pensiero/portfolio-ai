@@ -72,6 +72,37 @@
       background: rgba(16,18,28,.88) !important;
       border-color: rgba(255,222,163,.3) !important;
     }
+
+    /* ── Harmonized conversation (cinematic) ──────────────────────────
+       Gold film-credit accents on dark glass, a gilt answer rule.
+       Scoped under `.hero` to win over the renderer's greys. */
+    .hero:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.4rem); }
+    .hero:has(.thread) .subhead { display: none; }
+
+    .hero .popular-label, .hero .answer-label, .hero .you-label { color: #f3c683; letter-spacing: .2em; }
+    .hero .popular-rule, .hero .convo-rule { background: rgba(255,222,163,.22); }
+
+    .hero .chip { border-radius: 6px; border-color: rgba(255,222,163,.28); background: transparent; color: #f9f2e8; }
+    .hero .chip:hover { background: rgba(243,198,131,.14); border-color: #f3c683; }
+
+    .hero .you-bubble { background: rgba(255,222,163,.1); border: 1px solid rgba(255,222,163,.22); border-radius: 10px 10px 3px 10px; color: #f9f2e8; }
+
+    .hero .answer { background: rgba(255,222,163,.05); border: 1px solid rgba(255,222,163,.16); border-radius: 8px; }
+    .hero .answer.is-plain { background: transparent; border-color: transparent; }
+    .hero .answer-rule, .hero .answer-shimmer { width: 3px; opacity: 1; background: #f3c683; }
+    .hero .answer-source { color: #d8b079; font-style: italic; }
+    .hero .confidence-tag { border-top-color: rgba(255,222,163,.2); color: #c9a877; }
+    .hero .confidence-pct { color: #f3c683; }
+
+    .hero .dotwave span { background: #f3c683; }
+    .hero .status-text { color: #c9a877; }
+    .hero .skeleton-line {
+      background: linear-gradient(90deg, rgba(243,198,131,.05) 25%, rgba(243,198,131,.20) 50%, rgba(243,198,131,.05) 75%);
+      background-size: 200% 100%;
+    }
+
+    .hero .footer { border-top-color: rgba(255,222,163,.2); }
+    .hero .footer a, .hero .clear-btn { color: #f3c683; }
   </style>
 </head>
 <body data-llm-design="composite">

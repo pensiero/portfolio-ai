@@ -129,6 +129,46 @@
       background: rgba(12,10,24,.88) !important;
       border-color: rgba(116,130,255,.4) !important;
     }
+
+    /* ── Harmonized conversation surfaces ─────────────────────────────
+       The chat states inherit the neon language: pink↔cyan answer rule,
+       glass bubbles, a neon-tinted skeleton. Scoped under `.card` so they
+       win over the composite renderer's generic greys. */
+    .card:has(.thread) h1 { font-size: clamp(1.45rem, 4vw, 2rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label { color: var(--neon); opacity: .9; letter-spacing: .2em; }
+    .card .you-label { color: var(--hot); opacity: .85; }
+
+    .card .chip {
+      border-color: rgba(57,231,255,.3); background: transparent; color: var(--text);
+    }
+    .card .chip:hover { background: rgba(57,231,255,.12); border-color: var(--neon); }
+
+    .card .you-bubble {
+      background: rgba(143,109,255,.15); border: 1px solid rgba(143,109,255,.42);
+      border-radius: 14px 14px 4px 14px;
+    }
+
+    .card .answer { background: rgba(8,10,22,.62); border: 1px solid var(--line-c); border-radius: 14px; }
+    .card .answer.is-plain { border-color: transparent; background: transparent; }
+    .card .answer-rule, .card .answer-shimmer {
+      width: 2px; border-radius: 2px; opacity: 1;
+      background: linear-gradient(180deg, var(--hot), var(--neon));
+    }
+    .card .answer-source { color: var(--muted); }
+    .card .confidence-tag { border-top-color: rgba(116,130,255,.32); color: var(--muted); }
+    .card .confidence-pct { color: var(--neon); }
+
+    .card .dotwave span { background: var(--neon); }
+    .card .status-text { color: var(--muted); }
+    .card .skeleton-line {
+      background: linear-gradient(90deg, rgba(57,231,255,.06) 25%, rgba(143,109,255,.22) 50%, rgba(57,231,255,.06) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top-color: rgba(116,130,255,.28); }
+    .card .footer a, .card .clear-btn { color: var(--neon); }
   </style>
 </head>
 <body data-llm-design="composite">

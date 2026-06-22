@@ -47,6 +47,36 @@
       border-radius: 9px !important;
     }
     .ask-submit:hover { background: #3d2f4e !important; }
+
+    /* ── Harmonized conversation (retro-future) ───────────────────────
+       Glassy panels, a sunset peach→sky answer rule echoing the
+       gradient. Scoped under `.card` to win over the renderer. */
+    .card:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label, .card .you-label { color: #6b4f76; letter-spacing: .16em; }
+
+    .card .chip { border-color: rgba(42,31,53,.22); background: transparent; color: #2a1f35; }
+    .card .chip:hover { background: #fff; border-color: #2a1f35; }
+
+    .card .you-bubble { background: rgba(255,202,212,.5); border: 1px solid rgba(42,31,53,.12); border-radius: 14px 14px 4px 14px; color: #2a1f35; }
+
+    .card .answer { background: rgba(255,255,255,.6); border: 1px solid rgba(42,31,53,.1); border-radius: 14px; }
+    .card .answer.is-plain { background: transparent; border-color: transparent; }
+    .card .answer-rule, .card .answer-shimmer { width: 3px; opacity: 1; background: linear-gradient(180deg, #ff8fab, #8ec5ff); }
+    .card .answer-source { color: #6b4f76; }
+    .card .confidence-tag { border-top-color: rgba(42,31,53,.14); color: #6b4f76; }
+    .card .confidence-pct { color: #2a1f35; }
+
+    .card .dotwave span { background: #6b4f76; }
+    .card .status-text { color: #6b4f76; }
+    .card .skeleton-line {
+      background: linear-gradient(90deg, rgba(42,31,53,.05) 25%, rgba(255,143,171,.25) 50%, rgba(42,31,53,.05) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top-color: rgba(42,31,53,.12); }
+    .card .footer a, .card .clear-btn { color: #2a1f35; }
   </style>
 </head>
 <body data-llm-design="composite">

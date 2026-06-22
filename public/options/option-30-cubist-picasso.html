@@ -24,6 +24,8 @@
       border: 2px solid #3a3128;
     }
 
+    .card .chip { font-size: 14px }
+
     /* Translucent overlay preserves text legibility */
     .overlay {
       background: rgba(255,255,255,.78);
@@ -54,6 +56,38 @@
       border-radius: 0 !important;
     }
     .ask-submit:hover { background: #4e4338 !important; }
+
+    /* ── Harmonized conversation (cubist) ─────────────────────────────
+       Angular umber frames, a single ochre facet-rule on answers.
+       Scoped under `.overlay` (the legible surface) to beat the renderer. */
+    .overlay:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .overlay:has(.thread) .subhead { display: none; }
+
+    .overlay .popular-label, .overlay .answer-label, .overlay .you-label { color: #5b4a39; letter-spacing: .16em; }
+    .overlay .popular-rule, .overlay .convo-rule { background: #3a3128; }
+
+    .overlay .chip { border-radius: 0; border: 1px solid #3a3128; background: transparent; color: #1f1a17; }
+    .overlay .chip:hover { background: #f3d8a7; }
+
+    .overlay .you-bubble { background: #fff; border: 1.5px solid #3a3128; border-radius: 0; color: #1f1a17; }
+
+    .overlay .answer { background: rgba(255,255,255,.6); border: 1px solid #3a3128; border-radius: 0; }
+    .overlay .answer.is-plain { background: transparent; border-color: transparent; }
+    .overlay .answer-rule, .overlay .answer-shimmer { top: 0; bottom: 0; width: 5px; border-radius: 0; opacity: 1; background: #c8860a; }
+    .overlay .answer-source { color: #5b4a39; }
+    .overlay .confidence-tag { border-top-color: #3a3128; color: #5b4a39; }
+    .overlay .confidence-pct { color: #c8860a; }
+
+    .overlay .dotwave span { background: #c8860a; }
+    .overlay .status-text { color: #5b4a39; }
+    .overlay .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(58,49,40,.06) 25%, rgba(200,134,10,.22) 50%, rgba(58,49,40,.06) 75%);
+      background-size: 200% 100%;
+    }
+
+    .overlay .footer { border-top-color: #3a3128; }
+    .overlay .footer a, .overlay .clear-btn { color: #3a3128; }
   </style>
 </head>
 <body data-llm-design="composite">

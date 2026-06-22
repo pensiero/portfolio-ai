@@ -56,6 +56,39 @@
       letter-spacing: .04em;
       text-transform: uppercase;
     }
+
+    /* ── Harmonized conversation (brutalist) ──────────────────────────
+       Everything square, hard 2px black frames, a fat ink rule, mono
+       "typed" bubbles. Scoped under `.box` to beat the renderer. */
+    .box:has(.thread) h1 { font-size: clamp(1.5rem, 5vw, 2.6rem); }
+    .box:has(.thread) .subhead { display: none; }
+
+    .box .popular-label, .box .answer-label, .box .you-label { color: #000; opacity: 1; font-weight: 700; letter-spacing: .2em; }
+    .box .popular-rule, .box .convo-rule { background: #000; height: 2px; }
+
+    .box .chip { border-radius: 0; border: 1.5px solid #000; background: transparent; color: #000; font-family: monospace; }
+    .box .chip:hover { background: #000; color: #fff; }
+
+    .box .you-bubble { background: #fff; border: 2px solid #000; border-radius: 0; color: #000; font-family: monospace; }
+
+    .box .answer { background: #f4f4f4; border: 2px solid #000; border-radius: 0; }
+    .box .answer.is-plain { background: transparent; }
+    .box .answer-rule, .box .answer-shimmer { width: 6px; border-radius: 0; opacity: 1; background: #000; }
+    .box .answer-body { font-family: Arial, sans-serif; font-weight: 400; }
+    .box .answer-source { color: #000; opacity: .6; font-family: monospace; }
+    .box .confidence-tag { border-top: 2px solid #000; color: #000; }
+    .box .confidence-pct { color: #000; }
+
+    .box .dotwave span { background: #000; }
+    .box .status-text { color: #000; font-family: monospace; }
+    .box .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(0,0,0,.07) 25%, rgba(0,0,0,.18) 50%, rgba(0,0,0,.07) 75%);
+      background-size: 200% 100%;
+    }
+
+    .box .footer { border-top: 2px solid #000; }
+    .box .footer a, .box .clear-btn { color: #000; }
   </style>
 </head>
 <body data-llm-design="composite">

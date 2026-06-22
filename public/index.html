@@ -55,10 +55,12 @@
     const FADE_MS = 600;
 
     let currentStage = null;
+    let defaultStyle = DEFAULT_STYLE; // overridden by manifest.defaultStyle if present
 
     async function getFiles() {
       const res = await fetch('options/manifest.json', { cache: 'no-cache' });
       const manifest = await res.json();
+      if (manifest.defaultStyle) defaultStyle = manifest.defaultStyle;
       return (manifest.options || []).map((o) => o.file).filter(Boolean);
     }
 
@@ -113,7 +115,7 @@
         } else if (stored && files.includes(stored)) {
           chosen = stored; // refresh: stay on the recorded (possibly shuffled) style
         } else {
-          chosen = files.includes(DEFAULT_STYLE) ? DEFAULT_STYLE : files[0];
+          chosen = files.includes(defaultStyle) ? defaultStyle : files[0];
         }
 
         localStorage.setItem(ACTIVE_KEY, chosen);
@@ -130,16 +132,22 @@
 
     boot();
 
-    // When a style page triggers a shuffle (button or earthquake), roll a new
-    // style, record it, and crossfade it in without a hard reload.
+    // A style page can ask the shell to either shuffle to a random style or
+    // reset back to the default — both crossfade in without a hard reload.
     window.addEventListener('message', async (e) => {
       if (e.origin !== location.origin) return; // ignore cross-origin messages
-      if (e.data?.type !== 'portfolio-shuffle') return;
+      const type = e.data?.type;
+      if (type !== 'portfolio-shuffle' && type !== 'portfolio-reset') return;
       try {
         const files = await getFiles();
         if (!files.length) return;
-        const current = localStorage.getItem(ACTIVE_KEY);
-        const chosen = pickOther(files, current);
+        let chosen;
+        if (type === 'portfolio-reset') {
+          chosen = files.includes(defaultStyle) ? defaultStyle : files[0];
+        } else {
+          const current = localStorage.getItem(ACTIVE_KEY);
+          chosen = pickOther(files, current);
+        }
         localStorage.setItem(ACTIVE_KEY, chosen);
         mountStyle(chosen, { animate: true });
       } catch {}

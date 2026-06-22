@@ -68,6 +68,37 @@
       background: rgba(20,12,40,.88) !important;
       border-color: #9b7dff !important;
     }
+
+    /* ── Harmonized conversation (cosmic) ─────────────────────────────
+       Purple↔cyan glow language: a violet-to-cyan answer rule, glassy
+       panels. Scoped under `.card` to win over the renderer's greys. */
+    .card:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label, .card .you-label { color: #c5b6ff; letter-spacing: .16em; }
+    .card .popular-rule, .card .convo-rule { background: rgba(155,125,255,.3); }
+
+    .card .chip { border-radius: 8px; border-color: rgba(126,208,255,.34); background: transparent; color: #f8f4ff; }
+    .card .chip:hover { background: rgba(155,125,255,.16); border-color: #9b7dff; }
+
+    .card .you-bubble { background: rgba(155,125,255,.16); border: 1px solid rgba(155,125,255,.4); border-radius: 10px 10px 3px 10px; color: #f8f4ff; }
+
+    .card .answer { background: rgba(16,10,36,.55); border: 1px solid rgba(155,125,255,.28); border-radius: 8px; }
+    .card .answer.is-plain { background: transparent; border-color: transparent; }
+    .card .answer-rule, .card .answer-shimmer { width: 3px; opacity: 1; background: linear-gradient(180deg, #9b7dff, #7ed0ff); }
+    .card .answer-source { color: #a9a0d3; }
+    .card .confidence-tag { border-top-color: rgba(155,125,255,.26); color: #a9a0d3; }
+    .card .confidence-pct { color: #7ed0ff; }
+
+    .card .dotwave span { background: #7ed0ff; }
+    .card .status-text { color: #a9a0d3; }
+    .card .skeleton-line {
+      background: linear-gradient(90deg, rgba(155,125,255,.06) 25%, rgba(126,208,255,.22) 50%, rgba(155,125,255,.06) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top-color: rgba(155,125,255,.26); }
+    .card .footer a, .card .clear-btn { color: #7ed0ff; }
   </style>
 </head>
 <body data-llm-design="composite">

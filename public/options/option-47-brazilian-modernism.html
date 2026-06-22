@@ -48,6 +48,38 @@
       font-weight: 600;
     }
     .ask-submit:hover { background: #2a3f2c !important; }
+
+    /* ── Harmonized conversation (Niemeyer) ───────────────────────────
+       Structural forest frames with a tropical-lime offset and rule.
+       Scoped under `.card` to win over the renderer's rounded greys. */
+    .card:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label, .card .you-label { color: #45624a; letter-spacing: .16em; }
+    .card .popular-rule, .card .convo-rule { background: #1b2b1d; }
+
+    .card .chip { border-radius: 0; border: 1.5px solid #1b2b1d; background: transparent; color: #1b2b1d; }
+    .card .chip:hover { background: #eef4dd; }
+
+    .card .you-bubble { background: #fff; border: 2px solid #1b2b1d; border-radius: 0; color: #1b2b1d; box-shadow: 4px 4px 0 #cde07a; }
+
+    .card .answer { background: #f6f9ef; border: 2px solid #1b2b1d; border-radius: 0; }
+    .card .answer.is-plain { background: transparent; border-color: transparent; }
+    .card .answer-rule, .card .answer-shimmer { top: 0; bottom: 0; width: 6px; border-radius: 0; opacity: 1; background: #cde07a; }
+    .card .answer-source { color: #45624a; }
+    .card .confidence-tag { border-top: 2px solid rgba(27,43,29,.16); color: #45624a; }
+    .card .confidence-pct { color: #1b2b1d; }
+
+    .card .dotwave span { background: #1b2b1d; }
+    .card .status-text { color: #45624a; }
+    .card .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(27,43,29,.05) 25%, rgba(205,224,122,.50) 50%, rgba(27,43,29,.05) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top: 2px solid rgba(27,43,29,.14); }
+    .card .footer a, .card .clear-btn { color: #1b2b1d; }
   </style>
 </head>
 <body data-llm-design="composite">

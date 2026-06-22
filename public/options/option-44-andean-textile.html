@@ -56,6 +56,41 @@
       border-radius: 0 !important;
     }
     .ask-submit:hover { background: #935a3d !important; }
+
+    /* ── Harmonized conversation (woven) ──────────────────────────────
+       Loom language: square umber frames and an answer rule woven from
+       the same band threads. Scoped under `.body` to beat the renderer. */
+    .body:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .body:has(.thread) .subhead { display: none; }
+
+    .body .popular-label, .body .answer-label, .body .you-label { color: #7a4b32; letter-spacing: .16em; }
+    .body .popular-rule, .body .convo-rule { background: #7a4b32; }
+
+    .body .chip { border-radius: 0; border: 1px solid #7a4b32; background: transparent; color: #2f241b; }
+    .body .chip:hover { background: #f4efe6; }
+
+    .body .you-bubble { background: #faf6ef; border: 1.5px solid #d4b49f; border-radius: 0; color: #2f241b; }
+
+    .body .answer { background: #faf7f1; border: 1px solid #e3d3c4; border-radius: 0; }
+    .body .answer.is-plain { background: transparent; border-color: transparent; }
+    .body .answer-rule, .body .answer-shimmer {
+      top: 0; bottom: 0; width: 7px; border-radius: 0; opacity: 1;
+      background: repeating-linear-gradient(180deg, #b23a2b 0 10px, #e59a32 10px 20px, #3c7c66 20px 30px, #3f5898 30px 40px);
+    }
+    .body .answer-source { color: #7a4b32; }
+    .body .confidence-tag { border-top-color: #e3d3c4; color: #7a4b32; }
+    .body .confidence-pct { color: #b23a2b; }
+
+    .body .dotwave span { background: #b23a2b; }
+    .body .status-text { color: #7a4b32; }
+    .body .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(122,75,50,.06) 25%, rgba(178,58,43,.20) 50%, rgba(122,75,50,.06) 75%);
+      background-size: 200% 100%;
+    }
+
+    .body .footer { border-top-color: #e3d3c4; }
+    .body .footer a, .body .clear-btn { color: #7a4b32; }
   </style>
 </head>
 <body data-llm-design="composite">

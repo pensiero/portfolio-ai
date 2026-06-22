@@ -33,8 +33,8 @@
     "What does Oscar look for in a team?",
     "Why did Oscar co-found a quantum-computing startup?"
   ],
+  "defaultStyle": "option-49-brazilian-modernism-yellow.html",
   "options": [
-    { "file": "option-1-original.html", "title": "Original Prototype", "caption": "Profile: Oscar Fanelli · Interface: Original Query Prototype" },
     { "file": "option-2-editorial.html", "title": "Cyberpunk Core", "caption": "Signal: Oscar Fanelli · Mode: Cyberpunk Query Core" },
     { "file": "option-3-terminal.html", "title": "Terminal Dossier (dark)", "caption": "Identity: Oscar Fanelli · Channel: Terminal Dossier" },
     { "file": "option-4-terminal-white.html", "title": "Terminal Dossier (white)", "caption": "Identity: Oscar Fanelli · Channel: White Terminal Cut" },

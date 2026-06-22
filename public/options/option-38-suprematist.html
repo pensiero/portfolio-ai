@@ -58,6 +58,38 @@
       font-weight: 700;
     }
     .ask-submit:hover { background: #333 !important; }
+
+    /* ── Harmonized conversation (suprematist) ────────────────────────
+       Pure geometry: square 2px black frames, one red accent rule.
+       Scoped under `.card` to win over the renderer's rounded greys. */
+    .card:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label, .card .you-label { color: #111; letter-spacing: .16em; }
+    .card .popular-rule, .card .convo-rule { background: #111; height: 2px; }
+
+    .card .chip { border-radius: 0; border: 1.5px solid #111; background: transparent; color: #111; }
+    .card .chip:hover { background: #111; color: #fff; }
+
+    .card .you-bubble { background: #f2f2f2; border: 2px solid #111; border-radius: 0; color: #111; }
+
+    .card .answer { background: #fafafa; border: 2px solid #111; border-radius: 0; }
+    .card .answer.is-plain { background: transparent; }
+    .card .answer-rule, .card .answer-shimmer { top: 0; bottom: 0; width: 6px; border-radius: 0; opacity: 1; background: #e11d48; }
+    .card .answer-source { color: #555; }
+    .card .confidence-tag { border-top: 2px solid #111; color: #555; }
+    .card .confidence-pct { color: #e11d48; }
+
+    .card .dotwave span { background: #e11d48; }
+    .card .status-text { color: #555; }
+    .card .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(17,17,17,.06) 25%, rgba(225,29,72,.20) 50%, rgba(17,17,17,.06) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top: 2px solid #111; }
+    .card .footer a, .card .clear-btn { color: #e11d48; }
   </style>
 </head>
 <body data-llm-design="composite">

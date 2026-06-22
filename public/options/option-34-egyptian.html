@@ -58,6 +58,38 @@
       background: #221b12 !important;
       border-color: #9d7f45 !important;
     }
+
+    /* ── Harmonized conversation (chamber) ────────────────────────────
+       Gold leaf on dark stone: square chambers, a gilt answer rule.
+       Scoped under `.card` to win over the renderer's greys. */
+    .card:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label, .card .you-label { color: #d9bd7f; letter-spacing: .2em; }
+    .card .popular-rule, .card .convo-rule { background: rgba(199,163,90,.3); }
+
+    .card .chip { border-radius: 0; border: 1px solid #9d7f45; background: transparent; color: #f4dfb1; }
+    .card .chip:hover { background: #2d2417; border-color: #c7a35a; }
+
+    .card .you-bubble { background: #1a140d; border: 1px solid #9d7f45; border-radius: 0; color: #f4dfb1; }
+
+    .card .answer { background: #1c160e; border: 1px solid #4a3c22; border-radius: 0; }
+    .card .answer.is-plain { background: transparent; border-color: transparent; }
+    .card .answer-rule, .card .answer-shimmer { width: 4px; border-radius: 0; opacity: 1; background: #c7a35a; }
+    .card .answer-source { color: #b89f70; font-style: italic; }
+    .card .confidence-tag { border-top-color: rgba(199,163,90,.26); color: #b89f70; }
+    .card .confidence-pct { color: #c7a35a; }
+
+    .card .dotwave span { background: #c7a35a; }
+    .card .status-text { color: #b89f70; }
+    .card .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(199,163,90,.07) 25%, rgba(199,163,90,.24) 50%, rgba(199,163,90,.07) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top-color: rgba(199,163,90,.26); }
+    .card .footer a, .card .clear-btn { color: #c7a35a; }
   </style>
 </head>
 <body data-llm-design="composite">

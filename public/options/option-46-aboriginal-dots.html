@@ -64,6 +64,38 @@
       background: #3a2b20 !important;
       border-color: #c78c4b !important;
     }
+
+    /* ── Harmonized conversation (ceremony) ───────────────────────────
+       Dotted ceremonial lines carry into the chat; an ochre answer rule
+       on dark earth. Scoped under `.card` to win over the renderer. */
+    .card:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label, .card .you-label { color: #e0b170; letter-spacing: .16em; }
+    .card .popular-rule, .card .convo-rule { height: 0; background: transparent; border-top: 1px dotted #c78c4b; }
+
+    .card .chip { border-radius: 0; border: 1px dotted #c78c4b; background: transparent; color: #f5e7d0; }
+    .card .chip:hover { background: rgba(199,140,75,.12); border-color: #e0b170; }
+
+    .card .you-bubble { background: #2f241b; border: 1px dotted #c78c4b; border-radius: 0; color: #f5e7d0; }
+
+    .card .answer { background: #33271d; border: 1px solid #5a4530; border-radius: 0; }
+    .card .answer.is-plain { background: transparent; border-color: transparent; }
+    .card .answer-rule, .card .answer-shimmer { width: 4px; border-radius: 0; opacity: 1; background: #c78c4b; }
+    .card .answer-source { color: #b99166; }
+    .card .confidence-tag { border-top: 1px dotted #5a4530; color: #b99166; }
+    .card .confidence-pct { color: #e0b170; }
+
+    .card .dotwave span { background: #e0b170; }
+    .card .status-text { color: #b99166; }
+    .card .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(199,140,75,.08) 25%, rgba(224,177,112,.24) 50%, rgba(199,140,75,.08) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top: 1px dotted #5a4530; }
+    .card .footer a, .card .clear-btn { color: #e0b170; }
   </style>
 </head>
 <body data-llm-design="composite">

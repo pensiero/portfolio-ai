@@ -86,6 +86,37 @@
       font-family: inherit;
     }
     .ask-submit:hover { background: #dbeafe !important; }
+
+    /* ── Harmonized conversation (light terminal) ─────────────────────
+       Blue-accent rules, soft #eff6ff bubbles, hairline frames. Scoped
+       under `.window` to win over the renderer's generic surfaces. */
+    .window:has(.thread) h1 { font-size: clamp(1.15rem, 2.8vw, 1.6rem); }
+    .window:has(.thread) .subhead { display: none; }
+
+    .window .popular-label, .window .answer-label, .window .you-label { color: var(--accent); letter-spacing: .14em; }
+    .window .popular-rule, .window .convo-rule { background: var(--line-c); }
+
+    .window .chip { border-radius: 8px; border-color: #cfe0fb; background: transparent; color: #1d4ed8; }
+    .window .chip:hover { background: #eff6ff; border-color: var(--accent); }
+
+    .window .you-bubble { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 10px 10px 3px 10px; color: var(--text); }
+
+    .window .answer { background: #f8fafc; border: 1px solid var(--line-c); border-radius: 10px; }
+    .window .answer.is-plain { background: transparent; border-color: transparent; }
+    .window .answer-rule, .window .answer-shimmer { width: 3px; opacity: 1; background: var(--accent); }
+    .window .answer-source { color: var(--muted); }
+    .window .confidence-tag { border-top-color: var(--line-c); color: var(--muted); }
+    .window .confidence-pct { color: var(--accent); }
+
+    .window .dotwave span { background: var(--accent); }
+    .window .status-text { color: var(--muted); }
+    .window .skeleton-line {
+      background: linear-gradient(90deg, rgba(37,99,235,.05) 25%, rgba(37,99,235,.16) 50%, rgba(37,99,235,.05) 75%);
+      background-size: 200% 100%;
+    }
+
+    .window .footer { border-top-color: var(--line-c); }
+    .window .footer a, .window .clear-btn { color: var(--accent); }
   </style>
 </head>
 <body data-llm-design="composite">

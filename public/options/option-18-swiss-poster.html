@@ -69,6 +69,38 @@
     /* chat region: full width */
     .chat { grid-column: 1/13; }
 
+    /* ── Harmonized conversation (Swiss grid) ─────────────────────────
+       Square edges, hard black hairlines, a red accent rule. Scoped
+       under `.poster` to win over the renderer's rounded greys. */
+    .poster:has(.thread) h1 { grid-column: 1/13; font-size: clamp(1.6rem, 5vw, 2.8rem); }
+    .poster:has(.thread) .subhead { display: none; }
+
+    .poster .popular-label, .poster .answer-label, .poster .you-label { color: #0b0b0b; letter-spacing: .16em; }
+    .poster .popular-rule, .poster .convo-rule { background: #0b0b0b; }
+
+    .poster .chip { border-radius: 0; border: 1.5px solid #0b0b0b; background: transparent; color: #0b0b0b; }
+    .poster .chip:hover { background: #0b0b0b; color: #fff; }
+
+    .poster .you-bubble { background: #f4f4f5; border: none; border-radius: 0; color: #0b0b0b; }
+
+    .poster .answer { background: #fafafa; border-radius: 0; }
+    .poster .answer.is-plain { background: transparent; }
+    .poster .answer-rule, .poster .answer-shimmer { top: 0; bottom: 0; width: 6px; border-radius: 0; opacity: 1; background: var(--accent); }
+    .poster .answer-source { color: #52525b; }
+    .poster .confidence-tag { border-top-color: #0b0b0b; color: #52525b; }
+    .poster .confidence-pct { color: var(--accent); }
+
+    .poster .dotwave span { background: var(--accent); }
+    .poster .status-text { color: #52525b; }
+    .poster .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(11,11,11,.05) 25%, rgba(11,11,11,.14) 50%, rgba(11,11,11,.05) 75%);
+      background-size: 200% 100%;
+    }
+
+    .poster .footer { border-top: 2px solid #0b0b0b; }
+    .poster .footer a, .poster .clear-btn { color: var(--accent); }
+
     @media (max-width:900px) {
       .presence, h1, .subhead, .ask-field, .chat { grid-column: 1/13; }
       .subhead { margin-top: 8px; }

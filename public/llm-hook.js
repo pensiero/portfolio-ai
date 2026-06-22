@@ -213,6 +213,7 @@
         .dock-btn:hover{opacity:1;box-shadow:0 6px 22px rgba(0,0,0,.14)}
         .dock-btn:active{transform:scale(.97)}
         .dock-btn-text{white-space:nowrap}
+        .reset-btn .reset-ico{display:inline-block;font-size:15px;font-weight:700;line-height:1}
         .shuffle-btn.is-shuffling{opacity:1;cursor:default}
         .shuffle-btn .shuffle-beat-text{white-space:nowrap}
         .shuffle-cards{position:relative;display:inline-block;width:15px;height:12px;flex:none}
@@ -389,6 +390,25 @@
     showShuffleVeil(() => {
       sessionStorage.setItem(SHUFFLE_VEIL_KEY, '1');
       location.href = pick.file;
+    });
+  }
+
+  // Jump back to the default style. Surfaced as a "Default style" dock button
+  // only once the visitor has shuffled away from it.
+  function resetStyle() {
+    const def = manifest?.defaultStyle;
+    if (!def) return;
+    if (window.parent && window.parent !== window) {
+      try {
+        window.parent.postMessage({ type: 'portfolio-reset' }, location.origin);
+        return;
+      } catch {
+        /* fall through to standalone navigation */
+      }
+    }
+    showShuffleVeil(() => {
+      sessionStorage.setItem(SHUFFLE_VEIL_KEY, '1');
+      location.href = def;
     });
   }
 
@@ -877,6 +897,22 @@
       });
     }
 
+    // --- inject a "Default style" reset button to the LEFT of Shuffle, but
+    // only when the visitor is on a non-default style (i.e. has shuffled away).
+    const dock = document.querySelector('.dock');
+    const defStyle = manifest?.defaultStyle;
+    if (dock && defStyle && currentFile() !== defStyle && !dock.querySelector('[data-llm-reset]')) {
+      const resetBtn = el('button', {}, { type: 'button' });
+      resetBtn.className = 'dock-btn reset-btn';
+      resetBtn.setAttribute('data-llm-reset', '');
+      resetBtn.setAttribute('aria-label', 'Reset to the default style');
+      resetBtn.innerHTML =
+        '<span class="reset-ico" aria-hidden="true">↺</span>' +
+        '<span class="dock-btn-text">Default style</span>';
+      resetBtn.addEventListener('click', () => { if (!streaming) resetStyle(); });
+      dock.prepend(resetBtn);
+    }
+
     // --- wire the "What's behind this?" dock button (floating overlay)
     const behindBtn = document.querySelector('[data-llm-behind]');
     let behindOverlay = null;
@@ -1005,7 +1041,7 @@
     function buildPopular() {
       const frag = document.createDocumentFragment();
       const head = el('div'); head.className = 'popular';
-      head.innerHTML = '<span class="popular-label">popular questions</span><span class="popular-rule"></span>';
+      head.innerHTML = '<span class="popular-label">or start here</span><span class="popular-rule"></span>';
       const row = el('div'); row.className = 'chips';
       for (const q of (manifest?.suggestedQuestions || []).slice(0, 4)) row.append(makeChip(q));
       frag.append(head, row);

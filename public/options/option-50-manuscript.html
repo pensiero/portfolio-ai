@@ -41,7 +41,7 @@
     /* The "page" — bare surface, no border, no offset, no shadow. */
     .card {
       position: relative;
-      width: min(580px, 100%);
+      width: min(700px, 100%);
       background: var(--bg-page);
       border: none; border-radius: 0;
       padding: 52px 48px 44px;
@@ -68,7 +68,7 @@
     /* ── Italic subhead (hidden once chat is active) ── */
     .card .subhead {
       font-family: 'Source Serif 4', serif; font-style: italic; font-size: 18px; line-height: 1.5;
-      color: var(--ink-sub); opacity: 1; max-width: 380px; margin: 0 0 34px;
+      color: var(--ink-sub); opacity: 1; margin: 0 0 34px;
     }
     .card:has(.thread) .subhead { display: none; }
 
@@ -203,8 +203,8 @@
         <span class="presence-label">Oscar Fanelli</span>
       </div>
 
-      <h1>Curious about my work?</h1>
-      <p class="subhead">You're talking to my digital twin — it knows what I've built, and it grows as I do.</p>
+      <h1>Do not panic.</h1>
+      <p class="subhead">This machine utilizes the fundamental interconnectedness of my career to answer questions you didn't even know you had.</p>
 
       <form data-llm-form class="ask-field" autocomplete="off">
         <label class="sr-only" for="queryInput">Ask something about Oscar</label>

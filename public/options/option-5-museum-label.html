@@ -50,6 +50,39 @@
 
     /* presence: catalog-muted */
     .presence-label { color: #7a776f; letter-spacing: .18em; }
+
+    /* ── Harmonized conversation (gallery label) ──────────────────────
+       Quiet hairline rules, a thin ink margin-rule for answers, no loud
+       bubbles. Scoped under `.card` to win over the renderer's defaults. */
+    .card:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.4rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label, .card .you-label { color: #7a776f; letter-spacing: .18em; }
+    .card .popular-rule, .card .convo-rule { background: #e4e0d6; }
+    .card .popular { display: none }
+
+    .card .chips { margin-top: 20px }
+
+    .card .chip { font-size: 14px; border-radius: 8px; border-color: #d6d2c7; background: transparent; color: #d6d2c7; }
+    .card .chip:hover { background: #f1efe8; border-color: #b9b4a7; }
+
+    .card .you-bubble { background: #f3f1ea; border: 1px solid #e4e0d6; border-radius: 8px 8px 2px 8px; color: #1a1a1a; }
+
+    .card .answer { background: transparent; padding: 4px 18px 4px 18px; }
+    .card .answer-rule, .card .answer-shimmer { top: 2px; bottom: 2px; width: 2px; opacity: 1; background: #1a1a1a; }
+    .card .answer-source { color: #7a776f; font-style: italic; }
+    .card .confidence-tag { border-top-color: #e4e0d6; color: #7a776f; }
+    .card .confidence-pct { color: #1a1a1a; }
+
+    .card .dotwave span { background: #7a776f; }
+    .card .status-text { color: #7a776f; }
+    .card .skeleton-line {
+      background: linear-gradient(90deg, rgba(26,26,26,.04) 25%, rgba(26,26,26,.10) 50%, rgba(26,26,26,.04) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top-color: #e4e0d6; }
+    .card .footer a, .card .clear-btn { color: #1a1a1a; }
   </style>
 </head>
 <body data-llm-design="composite">

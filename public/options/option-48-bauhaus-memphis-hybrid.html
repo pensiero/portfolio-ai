@@ -60,6 +60,38 @@
       font-weight: 700;
     }
     .ask-submit:hover { background: #2e2840 !important; }
+
+    /* ── Harmonized conversation (Memphis) ────────────────────────────
+       Playful geometry: 2px indigo frames, cyan/pink offsets, a cyan→pink
+       answer rule. Scoped under `.card` to win over the renderer. */
+    .card:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.4rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label, .card .you-label { color: #574f7d; letter-spacing: .16em; font-weight: 700; }
+    .card .popular-rule, .card .convo-rule { background: #1f1b2d; }
+
+    .card .chip { border-radius: 0; border: 1.5px solid #1f1b2d; background: transparent; color: #1f1b2d; font-weight: 600; }
+    .card .chip:hover { background: #00c2ff; color: #1f1b2d; }
+
+    .card .you-bubble { background: #fff; border: 2px solid #1f1b2d; border-radius: 0; color: #1f1b2d; box-shadow: 4px 4px 0 #ff3ea5; }
+
+    .card .answer { background: #fbfaff; border: 2px solid #1f1b2d; border-radius: 0; }
+    .card .answer.is-plain { background: transparent; border-color: transparent; }
+    .card .answer-rule, .card .answer-shimmer { top: 0; bottom: 0; width: 7px; border-radius: 0; opacity: 1; background: linear-gradient(180deg, #00c2ff 0 50%, #ff3ea5 50% 100%); }
+    .card .answer-source { color: #574f7d; }
+    .card .confidence-tag { border-top: 2px solid rgba(31,27,45,.16); color: #574f7d; }
+    .card .confidence-pct { color: #ff3ea5; }
+
+    .card .dotwave span { background: #00c2ff; }
+    .card .status-text { color: #574f7d; }
+    .card .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(31,27,45,.06) 25%, rgba(0,194,255,.30) 50%, rgba(31,27,45,.06) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top: 2px solid rgba(31,27,45,.14); }
+    .card .footer a, .card .clear-btn { color: #ff3ea5; }
   </style>
 </head>
 <body data-llm-design="composite">

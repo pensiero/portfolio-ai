@@ -163,6 +163,12 @@ html, body {
   margin: 0 0 24px;
 }
 
+/* Once a conversation begins (the hook adds .thread), the header collapses
+   to give the answers room — the behaviour later refined in the Guidebook /
+   Manuscript styles, folded back into the baseline. */
+.composite-card:has(.thread) h1 { font-size: clamp(1.4rem, 4vw, 1.85rem); margin-bottom: 14px; }
+.composite-card:has(.thread) .subhead { display: none; }
+
 /* --------------------------------------------------------- the living input */
 .ask-field {
   position: relative;
@@ -172,10 +178,13 @@ html, body {
   border-radius: 11px;
   padding: 0 8px 0 18px;
   height: 60px;
-  transition: border-color 160ms ease;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
+/* Focus now also lifts the field onto a soft tinted ring, not just a darker
+   border — a quieter take on the offset affordances used across the styles. */
 .ask-field:focus-within {
   border-color: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 7%, transparent);
 }
 .ask-input {
   flex: 1;
@@ -263,7 +272,6 @@ html, body {
 .chip {
   font-family: var(--font-body);
   font-size: 15px;
-  font-weight: 600;
   color: inherit;
   background: transparent;
   border: 1.5px solid var(--chip-line);

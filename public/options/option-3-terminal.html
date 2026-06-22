@@ -77,6 +77,42 @@
       background: #0c0c0c !important;
       border-color: #1f3d28 !important;
     }
+
+    /* ── Harmonized conversation (phosphor transcript) ────────────────
+       Square corners, hairline #1f3d28 frames, a brighter phosphor rule.
+       Scoped under `.window` so they beat the renderer's generic styles. */
+    .window:has(.thread) h1 { font-size: clamp(1.15rem, 2.8vw, 1.55rem); }
+    .window:has(.thread) .subhead { display: none; }
+
+    .window .popular-label, .window .answer-label, .window .you-label { color: #67bd83; letter-spacing: .16em; }
+    .window .popular-rule, .window .convo-rule { background: #1f3d28; }
+
+    .window .chip {
+      border-radius: 0; border-color: #1f3d28; background: transparent; color: #b8ffcb;
+    }
+    .window .chip:hover { background: #1f3d28; }
+
+    .window .you-bubble {
+      background: transparent; border: 1px solid #1f3d28; border-radius: 0; color: #b8ffcb;
+    }
+
+    .window .answer { background: #0a130d; border: 1px solid #14271a; border-radius: 0; }
+    .window .answer.is-plain { background: transparent; border-color: transparent; }
+    .window .answer-rule, .window .answer-shimmer { width: 2px; border-radius: 0; opacity: 1; background: #45d97a; }
+    .window .answer-source { color: #67bd83; }
+    .window .confidence-tag { border-top-color: #1f3d28; color: #67bd83; }
+    .window .confidence-pct { color: #b8ffcb; }
+
+    .window .dotwave span { background: #45d97a; }
+    .window .status-text { color: #67bd83; }
+    .window .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(69,217,122,.06) 25%, rgba(69,217,122,.20) 50%, rgba(69,217,122,.06) 75%);
+      background-size: 200% 100%;
+    }
+
+    .window .footer { border-top-color: #1f3d28; }
+    .window .footer a, .window .clear-btn { color: #45d97a; }
   </style>
 </head>
 <body data-llm-design="composite">

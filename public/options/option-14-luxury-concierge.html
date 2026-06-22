@@ -59,6 +59,37 @@
       letter-spacing: .02em;
     }
     .ask-submit:hover { background: #2d2a27 !important; }
+
+    /* ── Harmonized conversation (concierge) ──────────────────────────
+       Restrained gold accents, hairline warm rules, a slim gilt answer
+       rule. Scoped under `.card` to win over the renderer's greys. */
+    .card:has(.thread) h1 { font-size: clamp(1.7rem, 4vw, 2.6rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label, .card .you-label { color: #8a7b68; letter-spacing: .2em; }
+    .card .popular-rule, .card .convo-rule { background: #e6ddd1; }
+
+    .card .chip { border-color: #e0d4c3; background: transparent; color: #191713; }
+    .card .chip:hover { background: #fff; border-color: #c4a988; }
+
+    .card .you-bubble { background: rgba(196,169,136,.14); border: 1px solid #e6ddd1; border-radius: 14px 14px 4px 14px; color: #191713; }
+
+    .card .answer { background: rgba(255,255,255,.55); border: 1px solid #ece4d8; border-radius: 14px; }
+    .card .answer.is-plain { background: transparent; border-color: transparent; }
+    .card .answer-rule, .card .answer-shimmer { width: 2px; opacity: 1; background: #c4a988; }
+    .card .answer-source { color: #8a7b68; font-style: italic; }
+    .card .confidence-tag { border-top-color: #e6ddd1; color: #8a7b68; }
+    .card .confidence-pct { color: #c4a988; }
+
+    .card .dotwave span { background: #c4a988; }
+    .card .status-text { color: #8a7b68; }
+    .card .skeleton-line {
+      background: linear-gradient(90deg, rgba(196,169,136,.08) 25%, rgba(196,169,136,.24) 50%, rgba(196,169,136,.08) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top-color: #e6ddd1; }
+    .card .footer a, .card .clear-btn { color: #191713; }
   </style>
 </head>
 <body data-llm-design="composite">

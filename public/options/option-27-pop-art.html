@@ -54,6 +54,39 @@
       font-weight: 900;
     }
     .ask-submit:hover { background: #e0004a !important; }
+
+    /* ── Harmonized conversation (pop art) ────────────────────────────
+       Comic-bold: 3px ink frames, hard offset shadows, a fat hot-pink
+       rule. Scoped under `.card` to win over the renderer's greys. */
+    .card:has(.thread) h1 { font-size: clamp(1.6rem, 5vw, 2.6rem); }
+    .card:has(.thread) .subhead { display: none; }
+
+    .card .popular-label, .card .answer-label, .card .you-label { color: #111; opacity: 1; font-weight: 900; letter-spacing: .14em; }
+    .card .popular-rule, .card .convo-rule { background: #111; height: 3px; }
+
+    .card .chip { border-radius: 0; border: 2px solid #111; background: transparent; color: #111; font-family: Arial, sans-serif; font-weight: 700; }
+    .card .chip:hover { background: #ff0054; color: #fff; }
+
+    .card .you-bubble { background: #fff200; border: 3px solid #111; border-radius: 0; color: #111; font-family: Arial, sans-serif; }
+
+    .card .answer { background: #fff; border: 3px solid #111; border-radius: 0; box-shadow: 6px 6px 0 #111; }
+    .card .answer.is-plain { background: transparent; box-shadow: none; }
+    .card .answer-rule, .card .answer-shimmer { top: 0; bottom: 0; width: 8px; border-radius: 0; opacity: 1; background: #ff0054; }
+    .card .answer-body { font-family: Arial, sans-serif; font-weight: 400; }
+    .card .answer-source { color: #ff0054; font-weight: 900; }
+    .card .confidence-tag { border-top: 3px solid #111; color: #111; }
+    .card .confidence-pct { color: #ff0054; }
+
+    .card .dotwave span { background: #ff0054; }
+    .card .status-text { color: #111; font-family: Arial, sans-serif; }
+    .card .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(17,17,17,.07) 25%, rgba(255,0,84,.25) 50%, rgba(17,17,17,.07) 75%);
+      background-size: 200% 100%;
+    }
+
+    .card .footer { border-top: 3px solid #111; }
+    .card .footer a, .card .clear-btn { color: #ff0054; }
   </style>
 </head>
 <body data-llm-design="composite">

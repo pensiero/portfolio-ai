@@ -69,6 +69,38 @@
       background: #1b1714 !important;
       border-color: #4a3f36 !important;
     }
+
+    /* ── Harmonized conversation (case file) ──────────────────────────
+       Dashed evidence frames, sepia labels, a red case-stamp rule on
+       answers. Scoped under `.sheet` to win over the renderer. */
+    .sheet:has(.thread) h1 { font-size: clamp(1.2rem, 3vw, 1.7rem); }
+    .sheet:has(.thread) .subhead { display: none; }
+
+    .sheet .popular-label, .sheet .answer-label, .sheet .you-label { color: #b8a997; letter-spacing: .16em; }
+    .sheet .popular-rule, .sheet .convo-rule { background: #4a3f36; }
+
+    .sheet .chip { border-radius: 0; border: 1px dashed #635344; background: transparent; color: #f2eadf; }
+    .sheet .chip:hover { background: #2c241f; border-color: #e7c59d; }
+
+    .sheet .you-bubble { background: #221c18; border: 1px dashed #635344; border-radius: 0; color: #f2eadf; }
+
+    .sheet .answer { background: #211b17; border: 1px solid #3a312a; border-radius: 0; }
+    .sheet .answer.is-plain { background: transparent; border-color: transparent; }
+    .sheet .answer-rule, .sheet .answer-shimmer { width: 3px; border-radius: 0; opacity: 1; background: #c56b52; }
+    .sheet .answer-source { color: #b8a997; }
+    .sheet .confidence-tag { border-top: 1px dashed #4a3f36; color: #b8a997; }
+    .sheet .confidence-pct { color: #e7c59d; }
+
+    .sheet .dotwave span { background: #e7c59d; }
+    .sheet .status-text { color: #b8a997; }
+    .sheet .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(242,234,223,.05) 25%, rgba(242,234,223,.14) 50%, rgba(242,234,223,.05) 75%);
+      background-size: 200% 100%;
+    }
+
+    .sheet .footer { border-top: 1px dashed #4a3f36; }
+    .sheet .footer a, .sheet .clear-btn { color: #e7c59d; }
   </style>
 </head>
 <body data-llm-design="composite">

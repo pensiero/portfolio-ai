@@ -24,6 +24,8 @@
       border: 2px solid #2a1f14;
     }
 
+    .card .chip { font-size: 14px }
+
     /* Warm inner overlay for legibility */
     .inner {
       background: rgba(255,248,232,.88);
@@ -54,6 +56,38 @@
       border-radius: 0 !important;
     }
     .ask-submit:hover { background: #3d2e1e !important; }
+
+    /* ── Harmonized conversation (muralist) ───────────────────────────
+       Bold earth blocks: square umber frames, a terracotta→teal mural
+       rule. Scoped under `.inner` (the legible panel) to beat the renderer. */
+    .inner:has(.thread) h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .inner:has(.thread) .subhead { display: none; }
+
+    .inner .popular-label, .inner .answer-label, .inner .you-label { color: #6e3a27; letter-spacing: .16em; }
+    .inner .popular-rule, .inner .convo-rule { background: #2a1f14; }
+
+    .inner .chip { border-radius: 0; border: 1px solid #2a1f14; background: transparent; color: #2a1f14; }
+    .inner .chip:hover { background: #f1bf54; }
+
+    .inner .you-bubble { background: #fff; border: 1.5px solid #2a1f14; border-radius: 0; color: #2a1f14; }
+
+    .inner .answer { background: rgba(255,248,232,.7); border: 1px solid #2a1f14; border-radius: 0; }
+    .inner .answer.is-plain { background: transparent; border-color: transparent; }
+    .inner .answer-rule, .inner .answer-shimmer { top: 0; bottom: 0; width: 6px; border-radius: 0; opacity: 1; background: linear-gradient(180deg, #d65f3a 0 50%, #3f8f77 50% 100%); }
+    .inner .answer-source { color: #6e3a27; }
+    .inner .confidence-tag { border-top-color: #2a1f14; color: #6e3a27; }
+    .inner .confidence-pct { color: #d65f3a; }
+
+    .inner .dotwave span { background: #d65f3a; }
+    .inner .status-text { color: #6e3a27; }
+    .inner .skeleton-line {
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(42,31,20,.06) 25%, rgba(214,95,58,.22) 50%, rgba(42,31,20,.06) 75%);
+      background-size: 200% 100%;
+    }
+
+    .inner .footer { border-top-color: #2a1f14; }
+    .inner .footer a, .inner .clear-btn { color: #6e3a27; }
   </style>
 </head>
 <body data-llm-design="composite">
