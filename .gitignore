@@ -10,6 +10,10 @@ logs/
 content/private-context.md
 content/*.private.md
 
+# Raw interviews / biography Q&A — source material for the bio, far more personal
+# than the bio itself. Never in a public repo.
+interviews/
+
 # Secrets / environment (for the future cloud provider swap)
 .env
 .env.*

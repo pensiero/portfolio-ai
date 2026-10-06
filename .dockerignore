@@ -1,20 +1,13 @@
-# Never bake secrets or private data into the (public) image.
-.env
-.env.*
-!.env.example
-content/private-context.md
-content/*.private.md
+# Default-deny: the image is PUBLIC on Docker Hub, so only what the app needs at
+# runtime goes in. Anything else in the repo — interviews, question files, notes,
+# the bio, .env — stays out unless it's explicitly allowed below.
+# The bio and secrets are injected at runtime (K8s Secret volume + env).
+*
+!package.json
+!package-lock.json
+!server.js
+!lib
+!public
 
-# Reproduce deps from the lockfile inside the image instead of copying host ones.
-node_modules
-
-# Runtime/output artifacts and noise.
-logs
-*.log
-.git
-.gitignore
-.idea
-.vscode
-.DS_Store
-claude-design
-PLAN.md
+# Re-exclude OS noise inside the allowed directories (later rules win).
+**/.DS_Store

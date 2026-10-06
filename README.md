@@ -12,7 +12,7 @@ over time, rather than a one-off CV or LinkedIn export.
 
 ```
 server.js            Express: serves public/, streams /api/ask over SSE
-lib/llm.js           Swappable LLM provider (local Ollama; hosted OpenCode Go)
+lib/llm.js           Swappable LLM provider (local Ollama; hosted OpenCode Go / OpenRouter)
 content/             The biography the AI answers from — git-ignored, never served
 public/              The entire web surface
   index.html         Manifest-driven shuffle launcher
@@ -64,12 +64,15 @@ npm start
 | Variable           | Default                                  | Purpose                                  |
 | ------------------ | ---------------------------------------- | ---------------------------------------- |
 | `PORT`             | `8787`                                   | HTTP port                                |
-| `LLM_PROVIDER`     | `ollama`                                 | `ollama` (local) or `opencode` (hosted)  |
+| `LLM_PROVIDER`     | `ollama`                                 | `ollama` (local), `opencode` or `openrouter` (hosted) |
 | `OLLAMA_URL`       | `http://127.0.0.1:11434`                 | Ollama endpoint                          |
 | `OLLAMA_MODEL`     | `gemma4:12b-mlx`                         | Local model                              |
 | `OPENCODE_API_KEY` | —                                        | OpenCode Go key (https://opencode.ai/auth) |
 | `OPENCODE_BASE_URL`| `https://opencode.ai/zen/go/v1`          | OpenAI-compatible base URL               |
 | `OPENCODE_MODEL`   | `deepseek-v4-flash`                      | Hosted model (any Zen model id)          |
+| `OPENROUTER_API_KEY` | —                                      | OpenRouter key (https://openrouter.ai/keys) |
+| `OPENROUTER_BASE_URL`| `https://openrouter.ai/api/v1`         | OpenAI-compatible base URL               |
+| `OPENROUTER_MODEL` | `deepseek/deepseek-chat`                 | Hosted model (`vendor/model` id)         |
 | `PRIVATE_DOC_PATH` | `content/private-context.md`             | Path to the bio                          |
 
 ## Roadmap
