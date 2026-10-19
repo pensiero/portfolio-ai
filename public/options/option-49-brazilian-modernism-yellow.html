@@ -4,9 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Option 49 — Brazilian Modernism (Yellow)</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=Spline+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- The default style is most visitors' first paint: fetch its headline and
+       body faces alongside the HTML instead of after the CSS. -->
+  <link rel="preload" href="../fonts/bricolage-grotesque-latin-85f55a58.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="../fonts/spline-sans-latin-14ed7b4d.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="../fonts/option-49-brazilian-modernism-yellow.css" />
   <style>
     /* ── Style 1 · The Guidebook ──────────────────────────────────
        Bold sans-serif editorial voice. A cream "page" card sits on a
@@ -67,30 +69,28 @@
     .card h1 {
       font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
       font-size: 44px; line-height: .98; letter-spacing: -.025em;
-      margin: 0 0 12px; color: var(--ink);
+      margin: 0 0 26px; color: var(--ink);
     }
     .card:has(.thread) h1 { font-size: 32px; line-height: 1; letter-spacing: -.02em; margin-bottom: 14px; }
 
-    /* ── Caption (hidden once chat is active) ── */
-    .card .subhead {  
-      font-family: 'Spline Sans', sans-serif; font-size: 15px; line-height: 1.55;
-      color: var(--ink-body); opacity: 1; max-width: 450px; margin: 0 0 22px;
-    }
-    .card:has(.thread) .subhead { display: none; }
-
     /* ── Input row ── */
+    /* The input is the main way in: tall, large type, resting on a small
+       yellow offset block even before focus. */
     .card .ask-field {
-      border: 2px solid var(--ink); border-radius: 2px; height: 56px;
-      padding: 0 6px 0 16px; background: #fff;
+      border: 2px solid var(--ink); border-radius: 2px; height: 66px;
+      padding: 0 8px 0 20px; background: #fff;
+      box-shadow: 4px 4px 0 var(--yellow);
       transition: box-shadow 160ms ease, transform 160ms ease;
     }
     /* On focus the field lifts onto a hard yellow offset block — the same
        16px,16px yellow shadow the card sits on, scaled down for the input. */
-    .card .ask-field:focus-within { border-color: var(--ink); box-shadow: 5px 5px 0 var(--yellow); }
-    .card:has(.thread) .ask-field { height: 52px; margin-bottom: 4px; }
-    .card .ask-input { font-size: 15.5px; color: var(--ink); }
-    .card .ask-ghost { left: 16px; right: 100px; font-size: 15.5px; opacity: 1; color: var(--ink-muted); }
-    .card .ask-caret { width: 2px; height: 20px; background: var(--ink); }
+    .card .ask-field:focus-within { border-color: var(--ink); box-shadow: 7px 7px 0 var(--yellow); }
+    .card:has(.thread) .ask-field { height: 54px; margin-bottom: 4px; box-shadow: none; }
+    .card:has(.thread) .ask-field:focus-within { box-shadow: 5px 5px 0 var(--yellow); }
+    .card .ask-input { font-size: 18px; color: var(--ink); }
+    .card .ask-ghost { left: 20px; right: 104px; font-size: 18px; opacity: 1; color: var(--ink-muted); }
+    .card:has(.thread) .ask-input, .card:has(.thread) .ask-ghost { font-size: 16px; }
+    .card .ask-caret { width: 2px; height: 22px; background: var(--ink); }
     /* No display override here: the hook reveals the button only once the
        visitor has typed (`.ask-field.has-text .ask-submit`), like every
        other style. */
@@ -189,7 +189,19 @@
     }
     .dock .behind-q { border-color: var(--ink); }
     .dock .shuffle-cards i { border-color: var(--ink); background: var(--bg-card); }
+
+    /* ── Phones: reclaim the width the stacked paddings eat, and leave room
+       at the bottom so the fixed dock never covers the last lines. ── */
+    @media (max-width: 520px) {
+      body { padding: 10px 10px 72px; }
+      main { padding: 8px 0; }
+      .card { padding: 22px 18px; box-shadow: 8px 8px 0 var(--yellow); width: calc(100% - 8px); }
+      .card h1 { font-size: 38px; }
+      .card .ask-field { height: 58px; padding-left: 14px; }
+      .card .ask-ghost { left: 14px; font-size: 16px; }
+    }
   </style>
+  <link rel="stylesheet" href="../llm-hook.css" />
 </head>
 <body data-llm-design="composite">
   <main>
@@ -207,7 +219,6 @@
       </div>
 
       <h1>Do not panic.</h1>
-      <p class="subhead">This machine runs on the fundamental interconnectedness of my career — ask it anything and watch the answer assemble itself.</p>
 
       <form data-llm-form class="ask-field" autocomplete="off">
         <label class="sr-only" for="queryInput">Ask something about Oscar</label>

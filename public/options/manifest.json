@@ -13,25 +13,41 @@
       { "title": "Live", "body": "Each reply is composed in the moment." },
       { "title": "Evolving", "body": "The source is refined day by day, it evolves as I do. Here simplified and exposed with guardrails." },
       { "title": "Beyond this page", "body": "I consult that same digital version of myself to pressure-test decisions, revisit my reasoning, and explore options." },
-      { "title": "It can get me wrong", "body": "It's an interpretation, so it can misread or oversimplify. For anything that really matters, please talk to the real Oscar. When it doesn't know, your question is recorded so I can improve the context." }
+      { "title": "It can get me wrong", "body": "It's an interpretation, so it can misread or oversimplify. For anything that really matters, please talk to the real Oscar." },
+      { "title": "What's kept", "body": "Questions are logged so I can see what people want to know and improve the context. I keep only the question text: no IP address, no cookies, no account." }
     ],
     "openSource": "Open source. See how it's built."
   },
+  "pinnedQuestion": "Short version of Oscar's career",
   "suggestedQuestions": [
-    "Short version of Oscar's career",
     "What does Oscar lead at InPost today?",
-    "How did he scale Uala from 3 to 20 and raise €5M?",
+    "How did he scale Uala and raise €5M?",
     "What did Oscar learn at Meetup?",
     "What is Oscar looking for next?",
-    "How is Oscar using AI?"
+    "How is Oscar using AI?",
+    "What's his take on AI in big companies?",
+    "Why did he almost move to Japan?",
+    "What happened to his quantum startup?",
+    "What did a Zen monastery teach him?",
+    "What's the story behind the porridge shop?",
+    "What did he build as a teenager?",
+    "Who taught him to build software properly?",
+    "How does Oscar hire?",
+    "How does Oscar make hard calls?",
+    "What does his work week look like?",
+    "What breaks when a team scales fast?",
+    "What advice does he give founders?",
+    "How does he work across cultures?",
+    "What has he built on GitHub?",
+    "Who is Oscar outside work?"
   ],
   "inputPrompts": [
-    "What's Oscar's management style?",
-    "How is Oscar using AI at work?",
-    "Where has Oscar worked over the years?",
-    "Why is Oscar learning Japanese?",
-    "What does Oscar look for in a team?",
-    "Why did Oscar co-found a quantum-computing startup?"
+    "Ask about a company, a person, a skill, a city…",
+    "Has Oscar worked with someone you know?",
+    "Would Oscar fit your team? Ask away.",
+    "Tell me about a time Oscar had to…",
+    "Ask what a CV wouldn't tell you",
+    "Why is Oscar learning Japanese?"
   ],
   "defaultStyle": "option-49-brazilian-modernism-yellow.html",
   "options": [

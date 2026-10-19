@@ -17,18 +17,24 @@ lib/prompt.js        System prompt + message envelope (shared by server and eval
 eval/                Model eval harness + playbook for comparing candidate models
 content/             The biography the AI answers from — git-ignored, never served
 public/              The entire web surface
-  index.html         Manifest-driven shuffle launcher
-  options.html       Gallery of every style
-  llm-hook.js        Shared chat controller injected into every style
+  index.html         Shuffle launcher (logic in shell.js; options.html → gallery.js)
+  llm-hook.js        Shared chat controller loaded by every style
+  llm-hook.css       Its styles, linked in each style's <head> (no unstyled flash)
+  fonts/             Self-hosted web fonts, one stylesheet per style that uses them
   options/
-    manifest.json    Single source of truth (styles, captions, chips, contact, about)
-    option-*.html    23 art-style pages
+    manifest.json    Single source of truth (styles, chips, placeholder prompts, contact, about)
+    option-*.html    24 art-style pages
 ```
+
+Starter chips are `pinnedQuestion` (always first) plus a random draw from
+`suggestedQuestions`, so no question wins just by its position.
 
 A hardened, single-purpose system prompt keeps the assistant scoped to questions
 about the subject only — it is not a general-purpose chatbot and refuses
-off-topic use and prompt-injection attempts. Requests are rate-limited and
-length-capped.
+off-topic use and prompt-injection attempts. Requests are rate-limited per
+visitor (by Cloudflare's `CF-Connecting-IP`) and site-wide, length-capped, and
+served under a strict Content-Security-Policy with every script and font
+same-origin.
 
 ## Privacy model
 
@@ -38,7 +44,10 @@ The biography is **private and is never committed or served**:
 - Only the sanitized `content/private-context.example.md` template is tracked.
 - The bio sits **outside** the `public/` web root, so it can't be served as a
   static asset under any route.
-- Visitor questions are logged to `logs/` (git-ignored) without IP or PII.
+- Visitor questions are logged (stdout, plus an optional Google Sheet) as the
+  question text, answer length, model and how it was asked (`typed`, `chip`,
+  `followup`) — no IP, no cookies. The site says so in "What's behind this?".
+- Fonts are self-hosted, so loading a page sends no visitor IP to Google.
 
 ## Run locally
 

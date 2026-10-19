@@ -1,5 +1,5 @@
 import express from 'express';
-import rateLimit from 'express-rate-limit';
+import { rateLimit, ipKeyGenerator } from 'express-rate-limit';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,10 +22,41 @@ const SHEET_WEBHOOK_TOKEN = process.env.LOGS_SHEET_WEBHOOK_TOKEN;
 
 // Request shape limits (also a lightweight abuse guard).
 const MAX_MESSAGE_CHARS = 500;
+// Earlier answers come back from the client, so they are untrusted too: trim
+// them so a forged "assistant" turn can't smuggle in a long fake history.
+// Real answers run ~1–2k characters.
+const MAX_ASSISTANT_CHARS = 6000;
 const MAX_HISTORY = 12;
+// Give up on a stalled model before the client's 2-minute auto-shuffle.
+const UPSTREAM_TIMEOUT_MS = 90 * 1000;
+
+// Everything is same-origin (fonts are self-hosted in public/fonts, so no
+// visitor IP reaches Google). Inline <style> blocks (one per art style) need
+// 'unsafe-inline' for styles; scripts are all files.
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self'",
+  "img-src 'self' data:",
+  "connect-src 'self'",
+  "frame-src 'self'",
+  "frame-ancestors 'self'",
+  "base-uri 'none'",
+  "form-action 'self'",
+  "object-src 'none'"
+].join('; ');
 
 const app = express();
+app.disable('x-powered-by');
 app.set('trust proxy', 1);
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', CONTENT_SECURITY_POLICY);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
 app.use(express.json({ limit: '16kb' }));
 
 // The private bio lives OUTSIDE this directory, so it can never be served as a
@@ -33,28 +64,49 @@ app.use(express.json({ limit: '16kb' }));
 app.use(express.static(PUBLIC_DIR, {
   etag: false,
   lastModified: false,
-  setHeaders(res) {
-    res.setHeader('Cache-Control', 'no-store');
+  setHeaders(res, filePath) {
+    // Font files carry a content hash in their name, so they can be cached
+    // for good; everything else must show a deploy immediately.
+    const immutable = filePath.endsWith('.woff2');
+    res.setHeader('Cache-Control', immutable ? 'public, max-age=31536000, immutable' : 'no-store');
   }
 }));
 
 // Liveness/readiness probe — cheap, no LLM call, never rate-limited.
 app.get('/healthz', (req, res) => res.status(200).type('text/plain').send('ok'));
 
-const askLimiter = rateLimit({
+// The cluster ingress forwards no client IP (no PROXY protocol, no trusted
+// forwarded headers), so req.ip is the same internal address for everyone.
+// Cloudflare's CF-Connecting-IP carries the real visitor; fall back to req.ip
+// locally. A request that skips Cloudflare could forge that header, so a
+// site-wide cap sits behind it as the hard ceiling on model spend.
+const visitorLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 20,
+  limit: 15,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests — please slow down.' }
+  keyGenerator: (req) => ipKeyGenerator(req.get('cf-connecting-ip') || req.ip),
+  message: { error: 'Too many questions in a row — give it a minute.' }
+});
+const siteLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 120,
+  standardHeaders: false,
+  legacyHeaders: false,
+  keyGenerator: () => 'site',
+  message: { error: 'Lots of people are asking right now — please try again in a minute.' }
 });
 
-function logQuery(question, answerChars) {
+// How a question was asked, as reported by the client (anything else → unknown).
+const QUESTION_SOURCES = new Set(['typed', 'chip', 'followup']);
+
+function logQuery(question, answerChars, source) {
   const event = {
     ts: new Date().toISOString(),
     question: String(question || '').slice(0, MAX_MESSAGE_CHARS),
     answerChars,
-    model: modelName()
+    model: modelName(),
+    source: QUESTION_SOURCES.has(source) ? source : 'unknown'
   };
 
   // Emit to stdout as a JSON line — captured by the container runtime (no PVC,
@@ -94,7 +146,7 @@ function parseMessages(body) {
     if (role === 'user' && content.length > MAX_MESSAGE_CHARS) {
       return { error: `Message too long (max ${MAX_MESSAGE_CHARS} characters)` };
     }
-    clean.push({ role, content });
+    clean.push({ role, content: role === 'assistant' ? content.slice(0, MAX_ASSISTANT_CHARS) : content });
   }
   if (clean[clean.length - 1].role !== 'user') {
     return { error: 'Last message must be from the user' };
@@ -102,7 +154,7 @@ function parseMessages(body) {
   return { messages: clean };
 }
 
-app.post('/api/ask', askLimiter, async (req, res) => {
+app.post('/api/ask', visitorLimiter, siteLimiter, async (req, res) => {
   const { messages, error } = parseMessages(req.body);
   if (error) return res.status(400).json({ error });
 
@@ -127,7 +179,7 @@ app.post('/api/ask', askLimiter, async (req, res) => {
   try {
     for await (const delta of streamChat({
       messages: llmMessages,
-      signal: controller.signal
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)])
     })) {
       answerChars += delta.length;
       res.write(`data: ${JSON.stringify(delta)}\n\n`);
@@ -135,11 +187,15 @@ app.post('/api/ask', askLimiter, async (req, res) => {
     res.write('event: done\ndata: {}\n\n');
   } catch (err) {
     if (!controller.signal.aborted) {
-      res.write(`event: error\ndata: ${JSON.stringify({ error: err.message })}\n\n`);
+      // Provider errors can name the gateway, the model or a missing key, so
+      // the detail stays in the server log and the visitor gets a plain line.
+      console.error(`LLM error: ${err.message}`);
+      const error = 'The model is unavailable right now — please try again in a minute.';
+      res.write(`event: error\ndata: ${JSON.stringify({ error })}\n\n`);
     }
   } finally {
     res.end();
-    if (!controller.signal.aborted) logQuery(lastQuestion, answerChars);
+    if (!controller.signal.aborted) logQuery(lastQuestion, answerChars, req.body?.source);
   }
 });
 

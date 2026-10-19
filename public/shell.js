@@ -1,0 +1,112 @@
+// The option list is manifest-driven — adding a style means dropping a file
+// in options/ and adding one manifest entry. No edits here.
+//
+// First visit (no record) ALWAYS lands on the default style. A shuffle records the
+// chosen style in localStorage, so a refresh stays on the shuffled style.
+//
+// A shuffle no longer hard-swaps the iframe src (which flashed). Instead we
+// mount the new style in a fresh layered iframe and crossfade it in over the
+// old one once it has fully loaded, then drop the old — no white flash, no
+// visible reload. The conversation survives via sessionStorage as before.
+const ACTIVE_KEY = 'portfolio-active-style';
+const DEFAULT_STYLE = 'option-49-brazilian-modernism-yellow.html';
+const FADE_MS = 600;
+
+let currentStage = null;
+let defaultStyle = DEFAULT_STYLE; // overridden by manifest.defaultStyle if present
+
+async function getFiles() {
+  const res = await fetch('options/manifest.json', { cache: 'no-cache' });
+  const manifest = await res.json();
+  if (manifest.defaultStyle) defaultStyle = manifest.defaultStyle;
+  return (manifest.options || []).map((o) => o.file).filter(Boolean);
+}
+
+function pickOther(files, current) {
+  if (files.length <= 1) return files[0];
+  const pool = files.filter((f) => f !== current);
+  return pool[Math.floor(Math.random() * pool.length)] || files[0];
+}
+
+// Mount a style in a new layered iframe. When `animate`, the incoming frame
+// fades in on top of the current one (which stays fully opaque underneath),
+// then the old frame is removed — a clean dissolve with no background dip.
+function mountStyle(file, { animate } = {}) {
+  const frame = document.createElement('iframe');
+  frame.className = 'stage';
+  frame.title = 'Portfolio style';
+
+  if (!animate) {
+    frame.src = 'options/' + file;
+    document.body.append(frame);
+    currentStage = frame;
+    return;
+  }
+
+  const prev = currentStage;
+  frame.style.opacity = '0';
+  frame.src = 'options/' + file;
+  document.body.append(frame);
+  currentStage = frame;
+
+  frame.addEventListener(
+    'load',
+    () => {
+      requestAnimationFrame(() => { frame.style.opacity = '1'; });
+      setTimeout(() => { if (prev && prev.parentNode) prev.remove(); }, FADE_MS + 60);
+    },
+    { once: true }
+  );
+}
+
+async function boot() {
+  try {
+    const files = await getFiles();
+    if (!files.length) throw new Error('No options in manifest');
+
+    const forceShuffle = new URLSearchParams(location.search).has('shuffle');
+    const stored = localStorage.getItem(ACTIVE_KEY);
+
+    let chosen;
+    if (forceShuffle) {
+      chosen = pickOther(files, stored);
+    } else if (stored && files.includes(stored)) {
+      chosen = stored; // refresh: stay on the recorded (possibly shuffled) style
+    } else {
+      chosen = files.includes(defaultStyle) ? defaultStyle : files[0];
+    }
+
+    localStorage.setItem(ACTIVE_KEY, chosen);
+    mountStyle(chosen, { animate: false });
+
+    // Drop ?shuffle=1 from the URL so a later refresh doesn't re-roll.
+    if (forceShuffle) history.replaceState(null, '', location.pathname);
+  } catch (err) {
+    // Fallback so the page is never blank if the manifest fails to load.
+    mountStyle(DEFAULT_STYLE, { animate: false });
+    console.error('Failed to load manifest:', err);
+  }
+}
+
+boot();
+
+// A style page can ask the shell to either shuffle to a random style or
+// reset back to the default — both crossfade in without a hard reload.
+window.addEventListener('message', async (e) => {
+  if (e.origin !== location.origin) return; // ignore cross-origin messages
+  const type = e.data?.type;
+  if (type !== 'portfolio-shuffle' && type !== 'portfolio-reset') return;
+  try {
+    const files = await getFiles();
+    if (!files.length) return;
+    let chosen;
+    if (type === 'portfolio-reset') {
+      chosen = files.includes(defaultStyle) ? defaultStyle : files[0];
+    } else {
+      const current = localStorage.getItem(ACTIVE_KEY);
+      chosen = pickOther(files, current);
+    }
+    localStorage.setItem(ACTIVE_KEY, chosen);
+    mountStyle(chosen, { animate: true });
+  } catch {}
+});

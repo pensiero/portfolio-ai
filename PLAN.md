@@ -81,6 +81,20 @@ Adding a style = drop a file in `public/options/` + add one `manifest.json` entr
 - Restructured into a `public/` web root; provider abstraction in `lib/llm.js`.
 - Chat persists across the shuffle via sessionStorage (restyle without losing the thread).
 
+**Engagement, hardening & privacy (2026-10-19)**
+
+- Visitor log showed a third of questions were the first chip, clicked by position. Chips are now a pinned "short
+  version" plus a random draw from a 20-question pool, made quieter so the input leads; the placeholder invites
+  visitors' own questions (a company, a person…); follow-ups go deeper / elsewhere / somewhere surprising. Each logged
+  question carries `source` (`typed` | `chip` | `followup`) to measure whether it works.
+- Rate limit was one shared bucket for the whole site (the ingress forwards no client IP); now 15/min per visitor via
+  `CF-Connecting-IP` plus a 120/min site-wide ceiling. The origin only accepts Cloudflare (Authenticated Origin Pulls,
+  platform repo), so the header can't be forged.
+- CSP and security headers; quotes escaped in rendered answers; provider errors no longer reach the visitor; output
+  token cap, assistant-history trim and an upstream timeout.
+- Fonts self-hosted (no visitor IP to Google); "What's behind this?" now discloses that every question is logged.
+- Chat CSS moved to a render-blocking `llm-hook.css` (no unstyled flash on load); the unused legacy renderer removed.
+
 ## Next
 
 - **Scannable / skim profile (hybrid landing).** Not everyone wants to converse — recruiters skim. Add a fast, static
