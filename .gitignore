@@ -5,6 +5,9 @@ node_modules/
 logs/
 *.log
 
+# Model eval output — answers are derived from the private bio
+eval/results/
+
 # Private biography — the real bio NEVER goes in a public repo.
 # Only the sanitized template (content/private-context.example.md) is tracked.
 content/private-context.md

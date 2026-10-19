@@ -1,0 +1,11 @@
+[
+  { "id": "deepseek/deepseek-v4-pro", "baseline": true, "note": "production (0423 build)" },
+  { "id": "deepseek/deepseek-v4-pro-0813", "note": "GA build of the same Pro" },
+  { "id": "deepseek/deepseek-v4.1-flash-1017", "note": "pinned V4.1 Flash snapshot" },
+  { "id": "deepseek/deepseek-v4.1-flash-1017", "label": "deepseek-v4.1-flash-1017@low", "reasoning": { "effort": "low" }, "note": "same, low reasoning effort" },
+  { "id": "google/gemini-3.8-flash" },
+  { "id": "xiaomi/mimo-v2.6-pro" },
+  { "id": "z-ai/glm-5.3" },
+  { "id": "anthropic/claude-haiku-5.5" },
+  { "id": "openai/gpt-6-luna" }
+]

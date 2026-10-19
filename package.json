@@ -6,7 +6,8 @@
     "node": ">=20"
   },
   "scripts": {
-    "start": "node --env-file-if-exists=.env server.js"
+    "start": "node --env-file-if-exists=.env server.js",
+    "eval": "node --env-file-if-exists=.env eval/run.js"
   },
   "dependencies": {
     "express": "^4.19.2",

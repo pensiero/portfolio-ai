@@ -13,6 +13,8 @@ over time, rather than a one-off CV or LinkedIn export.
 ```
 server.js            Express: serves public/, streams /api/ask over SSE
 lib/llm.js           Swappable LLM provider (local Ollama; hosted OpenCode Go / OpenRouter)
+lib/prompt.js        System prompt + message envelope (shared by server and eval)
+eval/                Model eval harness + playbook for comparing candidate models
 content/             The biography the AI answers from — git-ignored, never served
 public/              The entire web surface
   index.html         Manifest-driven shuffle launcher
@@ -72,7 +74,7 @@ npm start
 | `OPENCODE_MODEL`   | `deepseek-v4-flash`                      | Hosted model (any Zen model id)          |
 | `OPENROUTER_API_KEY` | —                                      | OpenRouter key (https://openrouter.ai/keys) |
 | `OPENROUTER_BASE_URL`| `https://openrouter.ai/api/v1`         | OpenAI-compatible base URL               |
-| `OPENROUTER_MODEL` | `deepseek/deepseek-chat`                 | Hosted model (`vendor/model` id)         |
+| `OPENROUTER_MODEL` | `deepseek/deepseek-v4.1-flash-1017`      | Hosted model (`vendor/model` id) — pick with `eval/PLAYBOOK.md` |
 | `PRIVATE_DOC_PATH` | `content/private-context.md`             | Path to the bio                          |
 
 ## Roadmap
